@@ -4,11 +4,18 @@ export function processMarkdown(content: string): string {
   return marked.parse(content) as string;
 }
 
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
 export function processPlainText(content: string): string {
   return content
     .split(/\n\s*\n/)
     .filter((para) => para.trim().length > 0)
-    .map((para) => `<p>${para.replace(/\n/g, '<br/>')}</p>`)
+    .map((para) => `<p>${escapeHtml(para).replace(/\n/g, '<br/>')}</p>`)
     .join('\n');
 }
 

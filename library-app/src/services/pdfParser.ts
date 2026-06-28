@@ -1,7 +1,15 @@
+import * as FileSystem from 'expo-file-system';
+
 export async function parsePdf(filePath: string): Promise<string> {
-  const response = await fetch(filePath);
-  const buffer = await response.arrayBuffer();
-  const uint8 = new Uint8Array(buffer);
+  const base64 = await FileSystem.readAsStringAsync(filePath, {
+    encoding: FileSystem.EncodingType.Base64,
+  });
+
+  const binaryString = atob(base64);
+  const uint8 = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    uint8[i] = binaryString.charCodeAt(i);
+  }
 
   let text = '';
 

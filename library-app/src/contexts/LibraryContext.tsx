@@ -30,19 +30,23 @@ export function LibraryProvider({ children }: { children: React.ReactNode }) {
   }, [refreshLibrary]);
 
   const addBook = async (book: Book) => {
-    const updated = [...books, book];
-    setBooks(updated);
-    await storage.set(STORAGE_KEYS.LIBRARY, updated);
+    setBooks((prev) => {
+      const updated = [...prev, book];
+      storage.set(STORAGE_KEYS.LIBRARY, updated);
+      return updated;
+    });
   };
 
   const removeBook = async (bookId: string) => {
     const book = books.find((b) => b.id === bookId);
     if (book && book.filePath) {
-      await FileSystem.deleteAsync(book.filePath).catch(() => {});
+      FileSystem.deleteAsync(book.filePath).catch(() => {});
     }
-    const updated = books.filter((b) => b.id !== bookId);
-    setBooks(updated);
-    await storage.set(STORAGE_KEYS.LIBRARY, updated);
+    setBooks((prev) => {
+      const updated = prev.filter((b) => b.id !== bookId);
+      storage.set(STORAGE_KEYS.LIBRARY, updated);
+      return updated;
+    });
   };
 
   const getBook = (bookId: string) => books.find((b) => b.id === bookId);

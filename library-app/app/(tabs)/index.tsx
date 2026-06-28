@@ -25,8 +25,12 @@ export default function LibraryScreen() {
       {
         text: 'Pick File',
         onPress: async () => {
-          const book = await importFile();
-          if (book) await addBook(book);
+          try {
+            const book = await importFile();
+            if (book) await addBook(book);
+          } catch (e) {
+            Alert.alert('Import Failed', 'Could not import this file.');
+          }
         },
       },
       { text: 'Paste Text', onPress: () => setPasteModal(true) },
@@ -36,11 +40,15 @@ export default function LibraryScreen() {
 
   const handlePaste = async () => {
     if (!pasteText.trim()) return;
-    const book = await importPastedText(pasteText, pasteTitle);
-    await addBook(book);
-    setPasteModal(false);
-    setPasteText('');
-    setPasteTitle('');
+    try {
+      const book = await importPastedText(pasteText, pasteTitle);
+      await addBook(book);
+      setPasteModal(false);
+      setPasteText('');
+      setPasteTitle('');
+    } catch (e) {
+      Alert.alert('Import Failed', 'Could not save pasted text.');
+    }
   };
 
   return (

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, Alert, FlatList } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert, FlatList } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { useLibrary } from '../../src/contexts/LibraryContext';
@@ -20,12 +20,13 @@ export default function ReaderScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { tokens } = useTheme();
   const { getBook } = useLibrary();
-  const { position, savePosition } = useReadingPosition(id!);
-  const { notes, addNote, deleteNote } = useNotes(id!);
-  const { highlights, addHighlight } = useHighlights(id!);
+  const bookId = id || '';
+  const { position, savePosition } = useReadingPosition(bookId);
+  const { notes, addNote, deleteNote } = useNotes(bookId);
+  const { highlights, addHighlight } = useHighlights(bookId);
   const router = useRouter();
 
-  const book = getBook(id!);
+  const book = getBook(bookId);
   if (!book) {
     return (
       <View style={[styles.container, { backgroundColor: tokens.bg, justifyContent: 'center', alignItems: 'center' }]}>
@@ -37,8 +38,14 @@ export default function ReaderScreen() {
   const availableThemes = (THEME_AVAILABILITY[book.defaultTheme] || ['parchment', 'modern']) as ThemeName[];
   const [activeTab, setActiveTab] = useState<'read' | 'notes'>('read');
   const [activeChapter, setActiveChapter] = useState(book.chapters[0]?.id || '');
-  const [currentPage, setCurrentPage] = useState(position);
+  const [currentPage, setCurrentPage] = useState(0);
   const [noteModalVisible, setNoteModalVisible] = useState(false);
+
+  useEffect(() => {
+    if (position > 0 && position < book.pageCount) {
+      setCurrentPage(position);
+    }
+  }, [position, book.pageCount]);
 
   // Find current chapter from page index
   let pageIndex = 0;
@@ -112,18 +119,22 @@ export default function ReaderScreen() {
 
       {/* Tab Bar */}
       <View style={[styles.tabBar, { borderBottomColor: tokens.border }]}>
-        <Text
-          style={[styles.tab, { color: activeTab === 'read' ? tokens.accent : tokens.text2 }]}
+        <TouchableOpacity
+          style={[styles.tab, activeTab === 'read' && { borderBottomColor: tokens.accent }]}
           onPress={() => setActiveTab('read')}
         >
-          📖 Read
-        </Text>
-        <Text
-          style={[styles.tab, { color: activeTab === 'notes' ? tokens.accent : tokens.text2 }]}
+          <Text style={[styles.tabText, { color: activeTab === 'read' ? tokens.accent : tokens.text2 }]}>
+            📖 Read
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tab, activeTab === 'notes' && { borderBottomColor: tokens.accent }]}
           onPress={() => setActiveTab('notes')}
         >
-          🗒 Notes
-        </Text>
+          <Text style={[styles.tabText, { color: activeTab === 'notes' ? tokens.accent : tokens.text2 }]}>
+            🗒 Notes
+          </Text>
+        </TouchableOpacity>
       </View>
 
       {/* Chapter Nav */}
@@ -186,11 +197,12 @@ export default function ReaderScreen() {
 
       {/* Floating Add Note Button */}
       {activeTab === 'read' && (
-        <View style={[styles.fab, { backgroundColor: tokens.accent }]}>
-          <Text style={styles.fabText} onPress={() => setNoteModalVisible(true)}>
-            ✎ Add Note
-          </Text>
-        </View>
+        <TouchableOpacity
+          style={[styles.fab, { backgroundColor: tokens.accent }]}
+          onPress={() => setNoteModalVisible(true)}
+        >
+          <Text style={styles.fabText}>✎ Add Note</Text>
+        </TouchableOpacity>
       )}
 
       {/* Note Modal */}
@@ -222,7 +234,8 @@ const styles = StyleSheet.create({
     marginHorizontal: 8,
   },
   tabBar: { flexDirection: 'row', borderBottomWidth: 1 },
-  tab: { padding: 10, paddingHorizontal: 18, fontFamily: FONTS.sansBold, fontSize: 13 },
+  tab: { padding: 10, paddingHorizontal: 18, borderBottomWidth: 3, borderBottomColor: 'transparent' },
+  tabText: { fontFamily: FONTS.sansBold, fontSize: 13 },
   scrollContent: { flex: 1 },
   chapterLabel: {
     fontFamily: FONTS.sansBold,

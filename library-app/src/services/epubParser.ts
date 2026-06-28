@@ -24,7 +24,16 @@ export async function parseEpub(filePath: string): Promise<{ title: string; chap
   const opfContent = await zip.file(rootfilePath)?.async('text');
   if (!opfContent) throw new Error('Invalid EPUB: missing OPF file');
 
-  const spineItems = [...opfContent.matchAll(/<item[^>]+id="([^"]+)"[^>]+href="([^"]+)"[^>]*\/>/g)];
+  const itemMatches = [...opfContent.matchAll(/<item[^>]+\/>/gi)];
+  const spineItems: [string, string][] = [];
+  for (const m of itemMatches) {
+    const tag = m[0];
+    const idMatch = tag.match(/id="([^"]+)"/);
+    const hrefMatch = tag.match(/href="([^"]+)"/);
+    if (idMatch && hrefMatch) {
+      spineItems.push([idMatch[1], hrefMatch[1]]);
+    }
+  }
   const spineOrder = [...opfContent.matchAll(/<itemref[^>]+idref="([^"]+)"/g)];
 
   const basePath = rootfilePath.substring(0, rootfilePath.lastIndexOf('/') + 1);
@@ -34,10 +43,10 @@ export async function parseEpub(filePath: string): Promise<{ title: string; chap
 
   for (const match of spineOrder) {
     const itemId = match[1];
-    const item = spineItems.find((i) => i[1] === itemId);
+    const item = spineItems.find((i) => i[0] === itemId);
     if (!item) continue;
 
-    const href = item[2];
+    const href = item[1];
     const fullPath = basePath + href;
     const file = zip.file(fullPath);
     if (!file) continue;

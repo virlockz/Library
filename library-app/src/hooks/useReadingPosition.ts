@@ -6,6 +6,7 @@ export function useReadingPosition(bookId: string) {
   const [position, setPosition] = useState(0);
 
   useEffect(() => {
+    if (!bookId) return;
     storage.get<number>(STORAGE_KEYS.getPageKey(bookId)).then((saved) => {
       if (saved !== null) setPosition(saved);
     });
@@ -13,7 +14,9 @@ export function useReadingPosition(bookId: string) {
 
   const savePosition = useCallback(async (page: number) => {
     setPosition(page);
-    await storage.set(STORAGE_KEYS.getPageKey(bookId), page);
+    if (bookId) {
+      storage.set(STORAGE_KEYS.getPageKey(bookId), page);
+    }
   }, [bookId]);
 
   return { position, savePosition };

@@ -1,3 +1,5 @@
+import { ThemeName } from '../types';
+
 export const APP_NAME = 'My Library';
 
 export const STORAGE_KEYS = {
@@ -11,14 +13,14 @@ export const STORAGE_KEYS = {
 
 export const THEMES = ['parchment', 'modern', 'current', 'veil'] as const;
 
-export const THEME_AVAILABILITY: Record<string, string[]> = {
+export const THEME_AVAILABILITY: Record<ThemeName, ThemeName[]> = {
   parchment: ['parchment', 'modern'],
   modern: ['parchment', 'modern'],
   current: ['parchment', 'current'],
   veil: ['parchment', 'veil'],
 };
 
-export const THEME_LABELS: Record<string, string> = {
+export const THEME_LABELS: Record<ThemeName, string> = {
   parchment: '🕯 Parchment',
   modern: '✦ Modern',
   current: '◆ Current',

@@ -1,5 +1,7 @@
 import React from 'react';
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { useTheme } from '../contexts/ThemeContext';
+import { FONTS } from '../constants/fonts';
 
 interface Props {
   visible: boolean;
@@ -15,10 +17,11 @@ const COLORS = [
 ];
 
 export function HighlightToolbar({ visible, onHighlight, onClear }: Props) {
+  const { tokens } = useTheme();
   if (!visible) return null;
 
   return (
-    <View style={styles.toolbar}>
+    <View style={[styles.toolbar, { backgroundColor: tokens.page, borderColor: tokens.border }]}>
       {COLORS.map((c) => (
         <TouchableOpacity
           key={c.name}
@@ -27,7 +30,7 @@ export function HighlightToolbar({ visible, onHighlight, onClear }: Props) {
         />
       ))}
       <TouchableOpacity style={styles.clearBtn} onPress={onClear}>
-        <Text style={styles.clearText}>✕</Text>
+        <Text style={[styles.clearText, { color: tokens.text2 }]}>✕</Text>
       </TouchableOpacity>
     </View>
   );
@@ -39,11 +42,11 @@ const styles = StyleSheet.create({
     top: 100,
     alignSelf: 'center',
     flexDirection: 'row',
-    backgroundColor: '#fff',
     borderRadius: 8,
     padding: 6,
     gap: 8,
     alignItems: 'center',
+    borderWidth: 1,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,

@@ -4,9 +4,10 @@ import { Book, Chapter, ThemeName } from '../types';
 import { parseEpub } from './epubParser';
 import { parsePdf } from './pdfParser';
 import { processMarkdown, processPlainText, splitIntoPages } from './textProcessor';
+import { SUPPORTED_EXTENSIONS } from '../constants';
 
 function generateId(): string {
-  return Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
+  return Date.now().toString(36) + Math.random().toString(36).substring(2, 11);
 }
 
 function getDefaultTheme(ext: string): ThemeName {
@@ -28,7 +29,7 @@ function chaptersToPages(chapters: Chapter[]): Chapter[] {
 
 export async function importFile(): Promise<Book | null> {
   const result = await DocumentPicker.getDocumentAsync({
-    type: ['application/pdf', 'application/epub+zip', 'text/plain', 'text/markdown', 'application/octet-stream'],
+    type: ['application/pdf', 'application/epub+zip', 'text/plain', 'text/markdown'],
     copyToCacheDirectory: true,
   });
 
@@ -41,6 +42,8 @@ export async function importFile(): Promise<Book | null> {
 
   await FileSystem.makeDirectoryAsync(destDir, { intermediates: true });
   await FileSystem.copyAsync({ from: file.uri, to: `${destDir}book${ext}` });
+
+  if (!SUPPORTED_EXTENSIONS.includes(ext)) return null;
 
   const localPath = `${destDir}book${ext}`;
   let chapters: Chapter[] = [];
@@ -98,6 +101,15 @@ export async function importFile(): Promise<Book | null> {
     }
     case '.txt':
     default: {
+      if (!SUPPORTED_EXTENSIONS.includes(ext)) {
+        chapters = chaptersToPages([{
+          id: 'chapter-1',
+          title,
+          label: 'Content',
+          pages: [{ heading: title, label: 'Part 1', body: `<p>Unsupported file format: ${ext}. Supported formats: ${SUPPORTED_EXTENSIONS.join(', ')}</p>` }],
+        }]);
+        break;
+      }
       const content = await FileSystem.readAsStringAsync(localPath);
       const html = processPlainText(content);
       const pages = splitIntoPages(html);

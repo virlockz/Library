@@ -13,11 +13,12 @@ export default function BookNotesDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { tokens } = useTheme();
   const { getBook } = useLibrary();
-  const { notes, deleteNote } = useNotes(id!);
+  const bookId = id || '';
+  const { notes, deleteNote } = useNotes(bookId);
   const router = useRouter();
   const [filter, setFilter] = useState<FilterType>('book');
 
-  const book = getBook(id!);
+  const book = getBook(bookId);
 
   const filteredNotes = notes.filter((n) => {
     if (filter === 'book') return n.type === 'book';

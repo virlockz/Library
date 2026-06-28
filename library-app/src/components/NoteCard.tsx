@@ -14,8 +14,8 @@ export function NoteCard({ note, onDelete }: Props) {
 
   const badgeColors: Record<string, { bg: string; text: string }> = {
     page: { bg: tokens.accentDim, text: tokens.accent },
-    chapter: { bg: 'rgba(80,160,80,0.15)', text: '#2D6A2D' },
-    book: { bg: 'rgba(80,80,200,0.1)', text: '#3A3AA0' },
+    chapter: { bg: 'rgba(80,160,80,0.15)', text: tokens.text2 },
+    book: { bg: 'rgba(80,80,200,0.1)', text: tokens.text2 },
   };
 
   const badge = badgeColors[note.type] || badgeColors.page;

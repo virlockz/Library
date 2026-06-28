@@ -1,12 +1,13 @@
 import { Tabs } from 'expo-router';
-import { Text, View } from 'react-native';
+import { Text, Platform } from 'react-native';
 import { useTheme } from '../../src/contexts/ThemeContext';
 
 export default function TabLayout() {
-  const { tokens } = useTheme();
+  const { tokens, theme } = useTheme();
 
   return (
     <Tabs
+      key={theme}
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
@@ -15,13 +16,13 @@ export default function TabLayout() {
           borderTopWidth: 1,
           elevation: 0,
           shadowOpacity: 0,
-          position: 'absolute' as const,
+          height: Platform.OS === 'android' ? 56 : undefined,
         },
         tabBarActiveTintColor: tokens.accent,
         tabBarInactiveTintColor: tokens.text2,
-        tabBarBackground: () => (
-          <View style={{ flex: 1, backgroundColor: tokens.tab }} />
-        ),
+        tabBarLabelStyle: {
+          color: tokens.text2,
+        },
       }}
     >
       <Tabs.Screen
