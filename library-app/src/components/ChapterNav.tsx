@@ -45,8 +45,8 @@ export function ChapterNav({ chapters, activeChapterId, onSelect }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { borderBottomWidth: 1 },
-  content: { flexDirection: 'row', gap: 6, padding: 10 },
+  container: { borderBottomWidth: 1, maxHeight: 44 },
+  content: { flexDirection: 'row', gap: 6, padding: 10, alignItems: 'center' },
   pill: {
     borderRadius: 20,
     paddingHorizontal: 14,

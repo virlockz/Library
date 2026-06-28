@@ -4,7 +4,7 @@ let pdfjsLib: any = null;
 
 async function getPdfjs() {
   if (pdfjsLib) return pdfjsLib;
-  const pdfjs = require('pdfjs-dist');
+  const pdfjs = require('pdfjs-dist/legacy/build/pdf.js');
   pdfjs.GlobalWorkerOptions.workerSrc = '';
   pdfjsLib = pdfjs;
   return pdfjs;
