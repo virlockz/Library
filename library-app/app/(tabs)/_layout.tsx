@@ -11,17 +11,7 @@ export default function TabLayout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: tokens.tab,
-          borderTopColor: tokens.border,
-          borderTopWidth: 1,
-          elevation: 0,
-          shadowOpacity: 0,
-          height: Platform.OS === 'android' ? 56 : undefined,
-        },
-        tabBarActiveTintColor: tokens.accent,
-        tabBarInactiveTintColor: tokens.text2,
-        tabBarLabelStyle: {
-          color: tokens.text2,
+          display: 'none',
         },
       }}
     >
@@ -29,7 +19,7 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Library',
-          tabBarIcon: ({ color }) => <Text style={{ fontSize: 20 }}>📖</Text>,
+          tabBarIcon: () => null,
         }}
       />
     </Tabs>

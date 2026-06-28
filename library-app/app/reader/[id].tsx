@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert, FlatList } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert, FlatList, Platform } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { useLibrary } from '../../src/contexts/LibraryContext';
@@ -108,13 +108,15 @@ export default function ReaderScreen() {
     <View style={[styles.container, { backgroundColor: tokens.bg }]}>
       {/* Top Bar */}
       <View style={[styles.topbar, { backgroundColor: tokens.tab, borderBottomColor: tokens.border }]}>
-        <Text style={[styles.backBtn, { color: tokens.accent }]} onPress={() => router.back()}>
-          ← Library
-        </Text>
-        <Text style={[styles.titleBar, { color: tokens.accent }]} numberOfLines={1}>
+        <TouchableOpacity style={[styles.backBtn, { borderColor: tokens.border }]} onPress={() => router.back()}>
+          <Text style={{ color: tokens.accent, fontFamily: FONTS.sansBold, fontSize: 13 }}>← Library</Text>
+        </TouchableOpacity>
+        <ThemeToggle availableThemes={availableThemes} />
+      </View>
+      <View style={[styles.titleBar, { backgroundColor: tokens.tab, borderBottomColor: tokens.border }]}>
+        <Text style={[styles.titleBarText, { color: tokens.accent }]} numberOfLines={1}>
           {book.title}
         </Text>
-        <ThemeToggle availableThemes={availableThemes} />
       </View>
 
       {/* Tab Bar */}
@@ -221,17 +223,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 12,
+    paddingTop: Platform.OS === 'android' ? 40 : 50,
+    paddingBottom: 10,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
   },
-  backBtn: { fontFamily: FONTS.sansBold, fontSize: 13 },
+  backBtn: {
+    borderWidth: 1.5,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
   titleBar: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+  },
+  titleBarText: {
     fontFamily: FONTS.serifBold,
     fontSize: 17,
-    flex: 1,
     textAlign: 'center',
-    marginHorizontal: 8,
   },
   tabBar: { flexDirection: 'row', borderBottomWidth: 1 },
   tab: { padding: 10, paddingHorizontal: 18, borderBottomWidth: 3, borderBottomColor: 'transparent' },
@@ -266,7 +277,7 @@ const styles = StyleSheet.create({
   },
   fab: {
     position: 'absolute',
-    bottom: 24,
+    bottom: 100,
     right: 24,
     borderRadius: 50,
     paddingHorizontal: 20,

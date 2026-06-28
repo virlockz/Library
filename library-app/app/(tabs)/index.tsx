@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  View, Text, FlatList, TouchableOpacity, StyleSheet, Alert, TextInput, Modal,
+  View, Text, FlatList, TouchableOpacity, StyleSheet, Alert, TextInput, Modal, Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTheme } from '../../src/contexts/ThemeContext';
@@ -174,7 +174,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 16,
+    paddingTop: Platform.OS === 'android' ? 40 : 50,
+    paddingBottom: 12,
+    paddingHorizontal: 16,
     borderBottomWidth: 1,
   },
   wordmark: { fontFamily: FONTS.serifBold, fontSize: 22, letterSpacing: 0.5 },
@@ -185,7 +187,7 @@ const styles = StyleSheet.create({
   content: { flex: 1, padding: 16 },
   heading: { fontFamily: FONTS.serifBold, fontSize: 32, marginBottom: 6 },
   sub: { fontFamily: FONTS.sans, fontSize: 14, opacity: 0.6, marginBottom: 24 },
-  grid: { paddingBottom: 100 },
+  grid: { paddingBottom: 24 },
   empty: {
     fontFamily: FONTS.serif,
     fontSize: 16,

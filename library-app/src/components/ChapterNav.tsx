@@ -52,6 +52,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 5,
     borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  pillText: { fontFamily: FONTS.sansBold, fontSize: 12 },
+  pillText: { fontFamily: FONTS.sansBold, fontSize: 12, textAlign: 'center' },
 });

@@ -2,7 +2,6 @@ import React from 'react';
 import { TouchableOpacity, Text, View, StyleSheet } from 'react-native';
 import { Book } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
-import { THEME_COLORS } from '../themes/tokens';
 import { FONTS } from '../constants/fonts';
 
 interface Props {
@@ -12,7 +11,6 @@ interface Props {
 
 export function BookCard({ book, onPress }: Props) {
   const { tokens } = useTheme();
-  const spineColor = THEME_COLORS[book.defaultTheme]?.accent || tokens.accent;
 
   return (
     <TouchableOpacity
@@ -20,7 +18,6 @@ export function BookCard({ book, onPress }: Props) {
       onPress={onPress}
       activeOpacity={0.7}
     >
-      <View style={[styles.spine, { backgroundColor: spineColor }]} />
       <View style={styles.body}>
         <Text style={[styles.domain, { color: tokens.accent }]}>
           {book.sourceType.toUpperCase()}
@@ -41,16 +38,10 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: 12,
     padding: 22,
-    flexDirection: 'row',
     borderWidth: 1,
     position: 'relative',
     overflow: 'hidden',
     marginBottom: 14,
-  },
-  spine: {
-    width: 4,
-    borderRadius: 12,
-    marginRight: 12,
   },
   body: {
     flex: 1,
