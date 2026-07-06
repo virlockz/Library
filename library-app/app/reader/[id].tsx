@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Platform, Animated } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { useLibrary } from '../../src/contexts/LibraryContext';
@@ -38,6 +38,10 @@ export default function ReaderScreen() {
   const { recordOpen } = useRecentlyOpened();
   const router = useRouter();
   const readingStartTime = useRef(Date.now());
+
+  const topBarAnim = useRef(new Animated.Value(0)).current;
+  const bottomBarAnim = useRef(new Animated.Value(0)).current;
+  const [controlsVisible, setControlsVisible] = useState(false);
 
   const book = getBook(bookId);
 
@@ -141,158 +145,197 @@ export default function ReaderScreen() {
     }
   };
 
+  const toggleControls = () => {
+    const show = !controlsVisible;
+    setControlsVisible(show);
+    Animated.parallel([
+      Animated.timing(topBarAnim, { toValue: show ? 1 : 0, duration: 200, useNativeDriver: true }),
+      Animated.timing(bottomBarAnim, { toValue: show ? 1 : 0, duration: 200, useNativeDriver: true }),
+    ]).start();
+  };
+
   const progress = book.pageCount > 0 ? ((currentPage + 1) / book.pageCount) * 100 : 0;
   const bookmarked = isBookmarked(currentPage);
 
   return (
     <View style={[styles.container, { backgroundColor: tokens.bg }]}>
+      {/* Reading Progress Bar — always visible */}
       <ReadingProgressBar progress={progress} />
 
-      {/* Top Bar */}
-      <View style={[styles.topbar, { backgroundColor: tokens.tab, borderBottomColor: tokens.border }]}>
-        <TouchableOpacity style={[styles.backBtn, { borderColor: tokens.border }]} onPress={() => router.back()}>
-          <Text style={{ color: tokens.accent, fontFamily: FONTS.sansBold, fontSize: 13 }}>← Library</Text>
-        </TouchableOpacity>
-        <View style={styles.topbarRight}>
-          <TouchableOpacity style={[styles.iconBtn, { borderColor: tokens.border }]} onPress={() => setTocVisible(true)}>
-            <Text style={{ color: tokens.accent, fontSize: 16 }}>☰</Text>
+      {/* Top Overlay — slides in on tap */}
+      <Animated.View
+        style={[
+          styles.topOverlay,
+          {
+            backgroundColor: tokens.tab,
+            borderBottomColor: tokens.border,
+            opacity: topBarAnim,
+            transform: [{ translateY: topBarAnim.interpolate({ inputRange: [0, 1], outputRange: [-80, 0] }) }],
+          },
+        ]}
+        pointerEvents={controlsVisible ? 'auto' : 'none'}
+      >
+        <View style={styles.topOverlayRow}>
+          <TouchableOpacity style={[styles.closeBtn, { borderColor: tokens.border }]} onPress={() => router.back()}>
+            <Text style={{ color: tokens.accent, fontFamily: FONTS.sansBold, fontSize: 16 }}>✕</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.iconBtn, { borderColor: tokens.border }]} onPress={() => setTypographyVisible(true)}>
-            <Text style={{ color: tokens.accent, fontSize: 16 }}>Aa</Text>
-          </TouchableOpacity>
-          <ThemeToggle availableThemes={availableThemes} />
+          <Text style={[styles.topOverlayTitle, { color: tokens.accent }]} numberOfLines={1}>
+            {book.title}
+          </Text>
+          <View style={styles.topOverlayRight}>
+            <TouchableOpacity style={[styles.iconBtn, { borderColor: tokens.border }]} onPress={() => setTocVisible(true)}>
+              <Text style={{ color: tokens.accent, fontSize: 16 }}>☰</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.iconBtn, { borderColor: tokens.border }]} onPress={() => setTypographyVisible(true)}>
+              <Text style={{ color: tokens.accent, fontSize: 16 }}>Aa</Text>
+            </TouchableOpacity>
+            <ThemeToggle availableThemes={availableThemes} />
+          </View>
         </View>
-      </View>
-      <View style={[styles.titleBar, { backgroundColor: tokens.tab, borderBottomColor: tokens.border }]}>
-        <Text style={[styles.titleBarText, { color: tokens.accent }]} numberOfLines={1}>
-          {book.title}
-        </Text>
-      </View>
+      </Animated.View>
 
-      {/* Tab Bar */}
-      <View style={[styles.tabBar, { borderBottomColor: tokens.border }]}>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'read' && { borderBottomColor: tokens.accent }]}
-          onPress={() => setActiveTab('read')}
-        >
-          <Text style={[styles.tabText, { color: activeTab === 'read' ? tokens.accent : tokens.text2 }]}>
-            📖 Read
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'notes' && { borderBottomColor: tokens.accent }]}
-          onPress={() => setActiveTab('notes')}
-        >
-          <Text style={[styles.tabText, { color: activeTab === 'notes' ? tokens.accent : tokens.text2 }]}>
-            🗒 Notes ({notes.length})
-          </Text>
-        </TouchableOpacity>
-      </View>
+      {/* Content Area — tap to toggle controls */}
+      <TouchableOpacity
+        style={styles.contentArea}
+        activeOpacity={1}
+        onPress={toggleControls}
+      >
+        {/* Tab Bar (shown when controls visible) */}
+        {controlsVisible && (
+          <View style={[styles.tabBar, { borderBottomColor: tokens.border, backgroundColor: tokens.tab }]}>
+            <TouchableOpacity
+              style={[styles.tab, activeTab === 'read' && { borderBottomColor: tokens.accent }]}
+              onPress={() => setActiveTab('read')}
+            >
+              <Text style={[styles.tabText, { color: activeTab === 'read' ? tokens.accent : tokens.text2 }]}>
+                📖 Read
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.tab, activeTab === 'notes' && { borderBottomColor: tokens.accent }]}
+              onPress={() => setActiveTab('notes')}
+            >
+              <Text style={[styles.tabText, { color: activeTab === 'notes' ? tokens.accent : tokens.text2 }]}>
+                🗒 Notes ({notes.length})
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
-      {/* Chapter Nav */}
-      {activeTab === 'read' && (
-        <ChapterNav
-          chapters={book.chapters}
-          activeChapterId={currentChapter?.id || ''}
-          onSelect={handleChapterSelect}
-        />
-      )}
+        {/* Chapter Nav (shown when controls visible) */}
+        {controlsVisible && activeTab === 'read' && (
+          <ChapterNav
+            chapters={book.chapters}
+            activeChapterId={currentChapter?.id || ''}
+            onSelect={(chId) => { handleChapterSelect(chId); setControlsVisible(false); Animated.parallel([Animated.timing(topBarAnim, { toValue: 0, duration: 200, useNativeDriver: true }), Animated.timing(bottomBarAnim, { toValue: 0, duration: 200, useNativeDriver: true })]).start(); }}
+          />
+        )}
 
-      {/* Read View */}
-      {activeTab === 'read' && currentPageData && (
-        <ScrollView style={styles.scrollContent}>
-          <PageSpread
-            pageNumber={currentPage}
-            totalPages={book.pageCount}
-            onPrev={() => handlePageChange(-1)}
-            onNext={() => handlePageChange(1)}
-          >
-            <View style={styles.pageHeader}>
-              <View style={styles.pageHeaderLeft}>
-                <Text style={[styles.chapterLabel, { color: tokens.accent }]}>
-                  {currentPageData.chapter?.label}
-                </Text>
-                <Text style={[styles.pageHeading, { color: tokens.accent }]}>
-                  {currentPageData.heading}
-                </Text>
-                <Text style={[styles.pageLabel, { color: tokens.text2 }]}>
-                  {currentPageData.label}
-                </Text>
+        {/* Read View */}
+        {activeTab === 'read' && currentPageData && (
+          <ScrollView style={styles.scrollContent} contentContainerStyle={styles.scrollContentInner}>
+            <PageSpread
+              pageNumber={currentPage}
+              totalPages={book.pageCount}
+              onPrev={() => handlePageChange(-1)}
+              onNext={() => handlePageChange(1)}
+            >
+              <View style={styles.pageHeader}>
+                <View style={styles.pageHeaderLeft}>
+                  <Text style={[styles.chapterLabel, { color: tokens.accent }]}>
+                    {currentPageData.chapter?.label}
+                  </Text>
+                  <Text style={[styles.pageHeading, { color: tokens.accent }]}>
+                    {currentPageData.heading}
+                  </Text>
+                  <Text style={[styles.pageLabel, { color: tokens.text2 }]}>
+                    {currentPageData.label}
+                  </Text>
+                </View>
+                <TouchableOpacity onPress={handleToggleBookmark}>
+                  <Text style={{ fontSize: 22 }}>{bookmarked ? '🔖' : '📑'}</Text>
+                </TouchableOpacity>
               </View>
-              <TouchableOpacity onPress={handleToggleBookmark}>
-                <Text style={{ fontSize: 22 }}>{bookmarked ? '🔖' : '📑'}</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.pageBody}>
-              {(book.sourceType === 'epub' || book.sourceType === 'pdf') ? (
-                <EpubReader
-                  html={currentPageData.body}
-                  fontSize={settings.fontSize}
-                  lineHeight={settings.lineHeight}
-                />
-              ) : (
-                <Text style={[styles.bodyText, {
-                  color: tokens.text,
-                  fontSize: settings.fontSize,
-                  lineHeight: settings.fontSize * settings.lineHeight,
-                }]}>
-                  {currentPageData.body.replace(/<[^>]+>/g, '')}
-                </Text>
+              <View style={styles.pageBody}>
+                {(book.sourceType === 'epub' || book.sourceType === 'pdf') ? (
+                  <EpubReader
+                    html={currentPageData.body}
+                    fontSize={settings.fontSize}
+                    lineHeight={settings.lineHeight}
+                  />
+                ) : (
+                  <Text style={[styles.bodyText, {
+                    color: tokens.text,
+                    fontSize: settings.fontSize,
+                    lineHeight: settings.fontSize * settings.lineHeight,
+                  }]}>
+                    {currentPageData.body.replace(/<[^>]+>/g, '')}
+                  </Text>
+                )}
+              </View>
+            </PageSpread>
+          </ScrollView>
+        )}
+
+        {/* Notes View */}
+        {activeTab === 'notes' && (
+          <ScrollView style={styles.notesView}>
+            <View style={styles.notesHeader}>
+              <Text style={[styles.notesHeading, { color: tokens.accent }]}>
+                Your Notes
+              </Text>
+              {notes.length > 0 && (
+                <TouchableOpacity onPress={() => setExportVisible(true)}>
+                  <Text style={[styles.exportBtn, { color: tokens.accent }]}>Export</Text>
+                </TouchableOpacity>
               )}
             </View>
-          </PageSpread>
-        </ScrollView>
-      )}
-
-      {/* Notes View */}
-      {activeTab === 'notes' && (
-        <ScrollView style={styles.notesView}>
-          <View style={styles.notesHeader}>
-            <Text style={[styles.notesHeading, { color: tokens.accent }]}>
-              Your Notes
-            </Text>
-            {notes.length > 0 && (
-              <TouchableOpacity onPress={() => setExportVisible(true)}>
-                <Text style={[styles.exportBtn, { color: tokens.accent }]}>Export</Text>
-              </TouchableOpacity>
+            {bookmarks.length > 0 && (
+              <View style={styles.section}>
+                <Text style={[styles.sectionTitle, { color: tokens.accent }]}>🔖 Bookmarks</Text>
+                {bookmarks.map((bm) => (
+                  <TouchableOpacity
+                    key={bm.id}
+                    style={[styles.bookmarkRow, { borderBottomColor: tokens.border }]}
+                    onPress={() => { setCurrentPage(bm.pageIndex); savePosition(bm.pageIndex); setActiveTab('read'); }}
+                  >
+                    <Text style={[styles.bookmarkText, { color: tokens.text }]}>{bm.label}</Text>
+                    <Text style={[styles.bookmarkMeta, { color: tokens.text2 }]}>Page {bm.pageIndex + 1} · {bm.date}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
             )}
-          </View>
-          {bookmarks.length > 0 && (
-            <View style={styles.section}>
-              <Text style={[styles.sectionTitle, { color: tokens.accent }]}>🔖 Bookmarks</Text>
-              {bookmarks.map((bm) => (
-                <TouchableOpacity
-                  key={bm.id}
-                  style={[styles.bookmarkRow, { borderBottomColor: tokens.border }]}
-                  onPress={() => { setCurrentPage(bm.pageIndex); savePosition(bm.pageIndex); setActiveTab('read'); }}
-                >
-                  <Text style={[styles.bookmarkText, { color: tokens.text }]}>{bm.label}</Text>
-                  <Text style={[styles.bookmarkMeta, { color: tokens.text2 }]}>Page {bm.pageIndex + 1} · {bm.date}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
-          {notes.length === 0 ? (
-            <Text style={[styles.emptyNotes, { color: tokens.text2 }]}>
-              No notes yet. Use the floating button to add one.
-            </Text>
-          ) : (
-            notes.map((note) => (
-              <NoteCard key={note.id} note={note} onDelete={deleteNote} />
-            ))
-          )}
-        </ScrollView>
-      )}
+            {notes.length === 0 ? (
+              <Text style={[styles.emptyNotes, { color: tokens.text2 }]}>
+                No notes yet. Tap screen → Add Note to create one.
+              </Text>
+            ) : (
+              notes.map((note) => (
+                <NoteCard key={note.id} note={note} onDelete={deleteNote} />
+              ))
+            )}
+          </ScrollView>
+        )}
+      </TouchableOpacity>
 
-      {/* Floating Add Note Button */}
-      {activeTab === 'read' && (
+      {/* Bottom Overlay — Add Note button slides up on tap */}
+      <Animated.View
+        style={[
+          styles.bottomOverlay,
+          {
+            opacity: bottomBarAnim,
+            transform: [{ translateY: bottomBarAnim.interpolate({ inputRange: [0, 1], outputRange: [60, 0] }) }],
+          },
+        ]}
+        pointerEvents={controlsVisible && activeTab === 'read' ? 'auto' : 'none'}
+      >
         <TouchableOpacity
-          style={[styles.fab, { backgroundColor: tokens.accent }]}
+          style={[styles.addNoteBtn, { backgroundColor: tokens.accent }]}
           onPress={() => setNoteModalVisible(true)}
         >
-          <Text style={styles.fabText}>✎ Add Note</Text>
+          <Text style={styles.addNoteBtnText}>✎ Add Note</Text>
         </TouchableOpacity>
-      )}
+      </Animated.View>
 
       {/* Modals */}
       <NoteModal
@@ -323,42 +366,52 @@ export default function ReaderScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  topbar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  topOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 100,
     paddingTop: Platform.OS === 'android' ? 40 : 50,
-    paddingBottom: 10,
+    paddingBottom: 12,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
   },
-  backBtn: {
-    borderWidth: 1.5,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+  topOverlayRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
-  topbarRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  closeBtn: {
+    borderWidth: 1.5,
+    borderRadius: 20,
+    width: 36,
+    height: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  topOverlayTitle: {
+    fontFamily: FONTS.serifBold,
+    fontSize: 16,
+    flex: 1,
+    textAlign: 'center',
+    marginHorizontal: 8,
+  },
+  topOverlayRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   iconBtn: {
     borderWidth: 1.5,
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 6,
   },
-  titleBar: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-  },
-  titleBarText: {
-    fontFamily: FONTS.serifBold,
-    fontSize: 17,
-    textAlign: 'center',
+  contentArea: {
+    flex: 1,
   },
   tabBar: { flexDirection: 'row', borderBottomWidth: 1 },
   tab: { padding: 10, paddingHorizontal: 18, borderBottomWidth: 3, borderBottomColor: 'transparent' },
   tabText: { fontFamily: FONTS.sansBold, fontSize: 13 },
   scrollContent: { flex: 1 },
+  scrollContentInner: { flexGrow: 1 },
   pageHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   pageHeaderLeft: { flex: 1 },
   chapterLabel: {
@@ -395,22 +448,27 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 40,
   },
-  fab: {
+  bottomOverlay: {
     position: 'absolute',
     bottom: 100,
-    right: 24,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    zIndex: 100,
+  },
+  addNoteBtn: {
     borderRadius: 50,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
+    paddingHorizontal: 24,
+    paddingVertical: 14,
     elevation: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
   },
-  fabText: {
+  addNoteBtnText: {
     color: '#fff',
     fontFamily: FONTS.sansBold,
-    fontSize: 14,
+    fontSize: 15,
   },
 });
