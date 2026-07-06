@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Platform, Animated } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Platform, Animated, PanResponder, Dimensions } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { useLibrary } from '../../src/contexts/LibraryContext';
@@ -41,7 +41,46 @@ export default function ReaderScreen() {
 
   const topBarAnim = useRef(new Animated.Value(0)).current;
   const bottomBarAnim = useRef(new Animated.Value(0)).current;
+  const dismissAnim = useRef(new Animated.Value(0)).current;
   const [controlsVisible, setControlsVisible] = useState(false);
+  const scrollOffsetY = useRef(0);
+  const isDismissing = useRef(false);
+
+  const dismissThreshold = Dimensions.get('window').height * 0.25;
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => false,
+      onMoveShouldSetPanResponder: (_, gestureState) => {
+        return gestureState.dy > 10 && Math.abs(gestureState.dx) < Math.abs(gestureState.dy) * 0.5 && scrollOffsetY.current <= 0 && !isDismissing.current;
+      },
+      onPanResponderMove: (_, gestureState) => {
+        if (gestureState.dy > 0) {
+          dismissAnim.setValue(gestureState.dy);
+        }
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dy > dismissThreshold) {
+          isDismissing.current = true;
+          Animated.timing(dismissAnim, {
+            toValue: Dimensions.get('window').height,
+            duration: 250,
+            useNativeDriver: true,
+          }).start(() => {
+            const elapsed = Date.now() - readingStartTime.current;
+            if (elapsed > 5000) recordReadingTime(elapsed);
+            router.back();
+          });
+        } else {
+          Animated.spring(dismissAnim, {
+            toValue: 0,
+            useNativeDriver: true,
+            bounciness: 8,
+          }).start();
+        }
+      },
+    })
+  ).current;
 
   const book = getBook(bookId);
 
@@ -159,8 +198,18 @@ export default function ReaderScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: tokens.bg }]}>
-      {/* Reading Progress Bar — always visible */}
-      <ReadingProgressBar progress={progress} />
+      <Animated.View
+        style={[
+          styles.dismissContainer,
+          {
+            transform: [{ translateY: dismissAnim }],
+            backgroundColor: tokens.bg,
+          },
+        ]}
+        {...panResponder.panHandlers}
+      >
+        {/* Reading Progress Bar — always visible */}
+        <ReadingProgressBar progress={progress} />
 
       {/* Top Overlay — slides in on tap */}
       <Animated.View
@@ -233,7 +282,12 @@ export default function ReaderScreen() {
 
         {/* Read View */}
         {activeTab === 'read' && currentPageData && (
-          <ScrollView style={styles.scrollContent} contentContainerStyle={styles.scrollContentInner}>
+          <ScrollView
+            style={styles.scrollContent}
+            contentContainerStyle={styles.scrollContentInner}
+            onScroll={(e) => { scrollOffsetY.current = e.nativeEvent.contentOffset.y; }}
+            scrollEventThrottle={16}
+          >
             <PageSpread
               pageNumber={currentPage}
               totalPages={book.pageCount}
@@ -337,7 +391,9 @@ export default function ReaderScreen() {
         </TouchableOpacity>
       </Animated.View>
 
-      {/* Modals */}
+      </Animated.View>
+
+      {/* Modals — outside dismiss animation so they stay in place */}
       <NoteModal
         visible={noteModalVisible}
         onClose={() => setNoteModalVisible(false)}
@@ -365,7 +421,8 @@ export default function ReaderScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: { flex: 1, overflow: 'hidden' },
+  dismissContainer: { flex: 1 },
   topOverlay: {
     position: 'absolute',
     top: 0,
