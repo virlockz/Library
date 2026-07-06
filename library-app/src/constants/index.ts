@@ -9,6 +9,11 @@ export const STORAGE_KEYS = {
   getThemeKey: (bookId: string) => `theme_${bookId}`,
   getNotesKey: (bookId: string) => `notes_${bookId}`,
   getHighlightsKey: (bookId: string) => `highlights_${bookId}`,
+  getBookmarksKey: (bookId: string) => `bookmarks_${bookId}`,
+  getReadingSettingsKey: () => `reading_settings`,
+  getReadingStatsKey: () => `reading_stats`,
+  getRecentlyOpenedKey: () => `recently_opened`,
+  getCollectionsKey: () => `collections`,
 };
 
 export const THEMES = ['parchment', 'modern', 'current', 'veil'] as const;

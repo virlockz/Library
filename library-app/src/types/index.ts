@@ -7,6 +7,7 @@ export interface Book {
   defaultTheme: ThemeName;
   chapters: Chapter[];
   pageCount: number;
+  coverColor?: string;
 }
 
 export interface Chapter {
@@ -44,4 +45,11 @@ export interface Highlight {
 
 export interface HighlightsMap {
   [pageIndex: number]: Highlight[];
+}
+
+export interface Bookmark {
+  id: string;
+  pageIndex: number;
+  label: string;
+  date: string;
 }

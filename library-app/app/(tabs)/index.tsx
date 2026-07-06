@@ -5,8 +5,11 @@ import {
 import { useRouter } from 'expo-router';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { useLibrary } from '../../src/contexts/LibraryContext';
+import { useRecentlyOpened } from '../../src/hooks/useRecentlyOpened';
 import { BookCard } from '../../src/components/BookCard';
 import { ThemeToggle } from '../../src/components/ThemeToggle';
+import { SearchModal } from '../../src/components/SearchModal';
+import { StatsDisplay } from '../../src/components/StatsDisplay';
 import { importFile, importPastedText } from '../../src/services/fileImport';
 import { ThemeName } from '../../src/types';
 import { FONTS } from '../../src/constants/fonts';
@@ -14,11 +17,18 @@ import { FONTS } from '../../src/constants/fonts';
 export default function LibraryScreen() {
   const { tokens } = useTheme();
   const { books, addBook } = useLibrary();
+  const { recent } = useRecentlyOpened();
   const router = useRouter();
   const [tab, setTab] = useState<'books' | 'notes'>('books');
   const [pasteModal, setPasteModal] = useState(false);
   const [pasteText, setPasteText] = useState('');
   const [pasteTitle, setPasteTitle] = useState('');
+  const [searchVisible, setSearchVisible] = useState(false);
+
+  const recentBooks = recent
+    .map((r) => books.find((b) => b.id === r.bookId))
+    .filter(Boolean)
+    .slice(0, 3);
 
   const handleImport = async () => {
     Alert.alert('Import Book', 'Choose how to add a book', [
@@ -51,12 +61,19 @@ export default function LibraryScreen() {
     }
   };
 
+  const handleOpenBook = (bookId: string) => {
+    router.push(`/reader/${bookId}`);
+  };
+
   return (
     <View style={[styles.container, { backgroundColor: tokens.bg }]}>
       {/* Top Bar */}
       <View style={[styles.topbar, { backgroundColor: tokens.tab, borderBottomColor: tokens.border }]}>
         <Text style={[styles.wordmark, { color: tokens.accent }]}>📖 My Library</Text>
         <View style={styles.topbarControls}>
+          <TouchableOpacity style={[styles.searchBtn, { borderColor: tokens.border }]} onPress={() => setSearchVisible(true)}>
+            <Text style={{ color: tokens.accent, fontSize: 16 }}>🔍</Text>
+          </TouchableOpacity>
           <ThemeToggle availableThemes={['parchment', 'modern'] as ThemeName[]} />
         </View>
       </View>
@@ -84,9 +101,28 @@ export default function LibraryScreen() {
       {/* Books Panel */}
       {tab === 'books' && (
         <View style={styles.content}>
+          <StatsDisplay />
+
+          {recentBooks.length > 0 && (
+            <View style={styles.section}>
+              <Text style={[styles.sectionTitle, { color: tokens.accent }]}>Continue Reading</Text>
+              <View style={styles.recentRow}>
+                {recentBooks.map((book) => book && (
+                  <TouchableOpacity
+                    key={book.id}
+                    style={[styles.recentCard, { backgroundColor: tokens.page, borderColor: tokens.border }]}
+                    onPress={() => handleOpenBook(book.id)}
+                  >
+                    <Text style={[styles.recentTitle, { color: tokens.text }]} numberOfLines={2}>{book.title}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          )}
+
           <Text style={[styles.heading, { color: tokens.accent }]}>Your Books</Text>
           <Text style={[styles.sub, { color: tokens.text2 }]}>
-            {books.length} {books.length === 1 ? 'book' : 'books'} · Import one to start reading
+            {books.length} {books.length === 1 ? 'book' : 'books'}
           </Text>
           <FlatList
             data={books}
@@ -94,7 +130,7 @@ export default function LibraryScreen() {
             renderItem={({ item }) => (
               <BookCard
                 book={item}
-                onPress={() => router.push(`/reader/${item.id}`)}
+                onPress={() => handleOpenBook(item.id)}
               />
             )}
             contentContainerStyle={styles.grid}
@@ -164,6 +200,12 @@ export default function LibraryScreen() {
           </View>
         </View>
       </Modal>
+
+      <SearchModal
+        visible={searchVisible}
+        onClose={() => setSearchVisible(false)}
+        onOpenBook={handleOpenBook}
+      />
     </View>
   );
 }
@@ -180,13 +222,19 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   wordmark: { fontFamily: FONTS.serifBold, fontSize: 22, letterSpacing: 0.5 },
-  topbarControls: { flexDirection: 'row', gap: 8 },
+  topbarControls: { flexDirection: 'row', gap: 8, alignItems: 'center' },
+  searchBtn: { borderWidth: 1.5, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6 },
   tabBar: { flexDirection: 'row', borderBottomWidth: 1 },
   tab: { padding: 11, borderBottomWidth: 3, borderBottomColor: 'transparent' },
   tabText: { fontFamily: FONTS.sansBold, fontSize: 13, letterSpacing: 0.3 },
   content: { flex: 1, padding: 16 },
-  heading: { fontFamily: FONTS.serifBold, fontSize: 32, marginBottom: 6 },
-  sub: { fontFamily: FONTS.sans, fontSize: 14, opacity: 0.6, marginBottom: 24 },
+  section: { marginBottom: 20 },
+  sectionTitle: { fontFamily: FONTS.sansBold, fontSize: 13, letterSpacing: 1, marginBottom: 10 },
+  recentRow: { flexDirection: 'row', gap: 10 },
+  recentCard: { flex: 1, borderRadius: 10, padding: 12, borderWidth: 1 },
+  recentTitle: { fontFamily: FONTS.serif, fontSize: 13, lineHeight: 18 },
+  heading: { fontFamily: FONTS.serifBold, fontSize: 28, marginBottom: 4 },
+  sub: { fontFamily: FONTS.sans, fontSize: 14, opacity: 0.6, marginBottom: 16 },
   grid: { paddingBottom: 24 },
   empty: {
     fontFamily: FONTS.serif,
@@ -197,7 +245,7 @@ const styles = StyleSheet.create({
   },
   fab: {
     position: 'absolute',
-    bottom: 24,
+    bottom: 48,
     right: 24,
     width: 56,
     height: 56,

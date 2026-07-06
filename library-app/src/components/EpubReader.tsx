@@ -5,9 +5,11 @@ import { useTheme } from '../contexts/ThemeContext';
 
 interface Props {
   html: string;
+  fontSize?: number;
+  lineHeight?: number;
 }
 
-export function EpubReader({ html }: Props) {
+export function EpubReader({ html, fontSize = 17, lineHeight = 1.85 }: Props) {
   const { tokens } = useTheme();
 
   const themedHtml = `
@@ -19,8 +21,8 @@ export function EpubReader({ html }: Props) {
         * { box-sizing: border-box; }
         body {
           font-family: Georgia, serif;
-          font-size: 17px;
-          line-height: 1.85;
+          font-size: ${fontSize}px;
+          line-height: ${lineHeight};
           color: ${tokens.text};
           background: ${tokens.page};
           padding: 0;
@@ -33,7 +35,7 @@ export function EpubReader({ html }: Props) {
         }
         h1 { font-size: 28px; }
         h2 { font-size: 22px; }
-        h3 { font-size: 17px; font-style: italic; }
+        h3 { font-size: ${fontSize}px; font-style: italic; }
         p { margin-bottom: 14px; }
         strong { color: ${tokens.accent}; }
         ul, ol { padding-left: 20px; margin-bottom: 14px; }
