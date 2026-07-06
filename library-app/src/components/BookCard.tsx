@@ -19,69 +19,37 @@ export function BookCard({ book, onPress }: Props) {
 
   return (
     <TouchableOpacity
-      style={[styles.card, { backgroundColor: tokens.page, borderColor: tokens.border }]}
+      style={styles.card}
       onPress={onPress}
       activeOpacity={0.7}
     >
-      <View style={styles.row}>
-        <BookCover title={book.title} size={60} />
-        <View style={styles.body}>
-          <Text style={[styles.domain, { color: tokens.accent }]}>
-            {book.sourceType.toUpperCase()}
-          </Text>
-          <Text style={[styles.title, { color: tokens.text }]} numberOfLines={2}>
-            {book.title}
-          </Text>
-          <Text style={[styles.meta, { color: tokens.text2 }]}>
-            {book.chapters.length} ch · {book.pageCount} pages
-          </Text>
-          {progress > 0 && (
-            <Text style={[styles.progressText, { color: tokens.text2 }]}>
-              {Math.round(progress)}% read
-            </Text>
-          )}
+      <BookCover title={book.title} size={150} />
+      {progress > 0 && (
+        <View style={styles.progressWrap}>
+          <ReadingProgressBar progress={progress} />
         </View>
-      </View>
-      {progress > 0 && <ReadingProgressBar progress={progress} />}
+      )}
+      <Text style={[styles.title, { color: tokens.text }]} numberOfLines={2}>
+        {book.title}
+      </Text>
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    marginBottom: 14,
+    width: '48%',
+    marginBottom: 20,
+  },
+  progressWrap: {
+    marginTop: 6,
+    borderRadius: 2,
     overflow: 'hidden',
   },
-  row: {
-    flexDirection: 'row',
-    gap: 14,
-  },
-  body: {
-    flex: 1,
-  },
-  domain: {
-    fontFamily: FONTS.sansBold,
-    fontSize: 10,
-    letterSpacing: 2,
-    textTransform: 'uppercase',
-    marginBottom: 6,
-  },
   title: {
-    fontFamily: FONTS.serifBold,
-    fontSize: 17,
-    lineHeight: 22,
-    marginBottom: 4,
-  },
-  meta: {
     fontFamily: FONTS.sans,
-    fontSize: 12,
-  },
-  progressText: {
-    fontFamily: FONTS.sans,
-    fontSize: 11,
-    marginTop: 4,
+    fontSize: 13,
+    lineHeight: 18,
+    marginTop: 6,
   },
 });

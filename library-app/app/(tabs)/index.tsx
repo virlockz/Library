@@ -7,6 +7,7 @@ import { useTheme } from '../../src/contexts/ThemeContext';
 import { useLibrary } from '../../src/contexts/LibraryContext';
 import { useRecentlyOpened } from '../../src/hooks/useRecentlyOpened';
 import { BookCard } from '../../src/components/BookCard';
+import { BookCover } from '../../src/components/BookCover';
 import { ThemeToggle } from '../../src/components/ThemeToggle';
 import { SearchModal } from '../../src/components/SearchModal';
 import { StatsDisplay } from '../../src/components/StatsDisplay';
@@ -110,9 +111,10 @@ export default function LibraryScreen() {
                 {recentBooks.map((book) => book && (
                   <TouchableOpacity
                     key={book.id}
-                    style={[styles.recentCard, { backgroundColor: tokens.page, borderColor: tokens.border }]}
+                    style={styles.recentCard}
                     onPress={() => handleOpenBook(book.id)}
                   >
+                    <BookCover title={book.title} size={90} />
                     <Text style={[styles.recentTitle, { color: tokens.text }]} numberOfLines={2}>{book.title}</Text>
                   </TouchableOpacity>
                 ))}
@@ -127,6 +129,8 @@ export default function LibraryScreen() {
           <FlatList
             data={books}
             keyExtractor={(item) => item.id}
+            numColumns={2}
+            columnWrapperStyle={styles.gridRow}
             renderItem={({ item }) => (
               <BookCard
                 book={item}
@@ -228,14 +232,15 @@ const styles = StyleSheet.create({
   tab: { padding: 11, borderBottomWidth: 3, borderBottomColor: 'transparent' },
   tabText: { fontFamily: FONTS.sansBold, fontSize: 13, letterSpacing: 0.3 },
   content: { flex: 1, padding: 16 },
-  section: { marginBottom: 20 },
-  sectionTitle: { fontFamily: FONTS.sansBold, fontSize: 13, letterSpacing: 1, marginBottom: 10 },
-  recentRow: { flexDirection: 'row', gap: 10 },
-  recentCard: { flex: 1, borderRadius: 10, padding: 12, borderWidth: 1 },
-  recentTitle: { fontFamily: FONTS.serif, fontSize: 13, lineHeight: 18 },
+  section: { marginBottom: 24 },
+  sectionTitle: { fontFamily: FONTS.sansBold, fontSize: 13, letterSpacing: 1, marginBottom: 12 },
+  recentRow: { flexDirection: 'row', gap: 14 },
+  recentCard: { width: 90 },
+  recentTitle: { fontFamily: FONTS.sans, fontSize: 11, lineHeight: 15, marginTop: 4 },
   heading: { fontFamily: FONTS.serifBold, fontSize: 28, marginBottom: 4 },
   sub: { fontFamily: FONTS.sans, fontSize: 14, opacity: 0.6, marginBottom: 16 },
-  grid: { paddingBottom: 24 },
+  grid: { paddingBottom: 80 },
+  gridRow: { justifyContent: 'space-between' },
   empty: {
     fontFamily: FONTS.serif,
     fontSize: 16,
