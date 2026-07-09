@@ -114,7 +114,7 @@ export default function LibraryScreen() {
                     style={styles.recentCard}
                     onPress={() => handleOpenBook(book.id)}
                   >
-                    <BookCover title={book.title} size={90} />
+                    <BookCover title={book.title} coverImage={book.coverImage} size={90} />
                     <Text style={[styles.recentTitle, { color: tokens.text }]} numberOfLines={2}>{book.title}</Text>
                   </TouchableOpacity>
                 ))}

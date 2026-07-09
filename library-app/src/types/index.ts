@@ -7,7 +7,7 @@ export interface Book {
   defaultTheme: ThemeName;
   chapters: Chapter[];
   pageCount: number;
-  coverColor?: string;
+  coverImage?: string;
 }
 
 export interface Chapter {

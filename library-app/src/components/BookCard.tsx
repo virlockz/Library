@@ -23,7 +23,7 @@ export function BookCard({ book, onPress }: Props) {
       onPress={onPress}
       activeOpacity={0.7}
     >
-      <BookCover title={book.title} size={150} />
+      <BookCover title={book.title} coverImage={book.coverImage} size={150} />
       {progress > 0 && (
         <View style={styles.progressWrap}>
           <ReadingProgressBar progress={progress} />

@@ -48,11 +48,13 @@ export async function importFile(): Promise<Book | null> {
   const localPath = `${destDir}book${ext}`;
   let chapters: Chapter[] = [];
   let title = file.name.replace(/\.[^/.]+$/, '');
+  let coverImage: string | undefined;
 
   switch (ext) {
     case '.epub': {
       const parsed = await parseEpub(localPath);
       title = parsed.title;
+      coverImage = parsed.coverImage;
       chapters = chaptersToPages(
         parsed.chapters.map((ch) => ({
           id: ch.id,
@@ -136,6 +138,7 @@ export async function importFile(): Promise<Book | null> {
     defaultTheme: getDefaultTheme(ext),
     chapters,
     pageCount: chapters.reduce((sum, ch) => sum + ch.pages.length, 0),
+    ...(coverImage ? { coverImage } : {}),
   };
 }
 

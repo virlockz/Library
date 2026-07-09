@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, Image, StyleSheet } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { FONTS } from '../constants/fonts';
 
@@ -20,10 +20,11 @@ function hashString(str: string): number {
 
 interface Props {
   title: string;
+  coverImage?: string;
   size?: number;
 }
 
-export function BookCover({ title, size = 80 }: Props) {
+export function BookCover({ title, coverImage, size = 80 }: Props) {
   const { tokens } = useTheme();
   const colorIndex = hashString(title) % COVER_COLORS.length;
   const bgColor = COVER_COLORS[colorIndex];
@@ -33,6 +34,19 @@ export function BookCover({ title, size = 80 }: Props) {
     .map((w) => w[0])
     .join('')
     .toUpperCase();
+
+  if (coverImage) {
+    return (
+      <View style={[styles.coverWrap, { width: size, height: size * 1.4, borderRadius: size * 0.06 }]}>
+        <Image
+          source={{ uri: coverImage }}
+          style={[styles.image, { borderRadius: size * 0.06 }]}
+          resizeMode="cover"
+        />
+        <View style={[styles.spine, { backgroundColor: 'rgba(0,0,0,0.1)' }]} />
+      </View>
+    );
+  }
 
   return (
     <View style={[styles.cover, { width: size, height: size * 1.4, backgroundColor: bgColor, borderRadius: size * 0.06 }]}>
@@ -47,6 +61,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
+  },
+  coverWrap: {
+    overflow: 'hidden',
+  },
+  image: {
+    width: '100%',
+    height: '100%',
   },
   initials: {
     fontFamily: FONTS.serifBold,
