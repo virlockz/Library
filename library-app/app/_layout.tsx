@@ -23,17 +23,13 @@ function IntentHandler() {
         try {
           const book = await importFileFromUri(url);
           if (book) await addBook(book);
-        } catch (e) {
-          // Silent fail on intent import
-        }
+        } catch (e) {}
       }
     };
-
     Linking.getInitialURL().then(handleUrl);
     const sub = Linking.addEventListener('url', (e) => handleUrl(e.url));
     return () => sub.remove();
   }, []);
-
   return null;
 }
 
@@ -42,26 +38,10 @@ export default function RootLayout() {
     <ThemeProvider>
       <LibraryProvider>
         <IntentHandler />
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            animation: Platform.OS === 'android' ? 'slide_from_left' : 'default',
-            contentStyle: { backgroundColor: 'transparent' },
-          }}
-        >
+        <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="(tabs)" />
-          <Stack.Screen
-            name="reader/[id]"
-            options={{
-              animation: 'slide_from_right',
-            }}
-          />
-          <Stack.Screen
-            name="reader/notes/[id]"
-            options={{
-              animation: 'slide_from_right',
-            }}
-          />
+          <Stack.Screen name="reader/[id]" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="reader/notes/[id]" options={{ animation: 'slide_from_right' }} />
         </Stack>
       </LibraryProvider>
     </ThemeProvider>
