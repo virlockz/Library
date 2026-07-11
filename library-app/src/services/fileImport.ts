@@ -12,11 +12,11 @@ function generateId(): string {
 
 function getDefaultTheme(ext: string): ThemeName {
   switch (ext) {
-    case '.epub': return 'parchment';
-    case '.pdf': return 'parchment';
-    case '.md': return 'modern';
-    case '.txt': return 'parchment';
-    default: return 'parchment';
+    case '.epub': return 'apple';
+    case '.pdf': return 'apple';
+    case '.md': return 'apple';
+    case '.txt': return 'apple';
+    default: return 'apple';
   }
 }
 
@@ -153,7 +153,7 @@ export async function importPastedText(text: string, title: string): Promise<Boo
     sourceType: 'pasted',
     filePath: '',
     addedAt: new Date().toISOString(),
-    defaultTheme: 'parchment',
+    defaultTheme: 'apple',
     chapters: [{
       id: 'chapter-1',
       title: title || 'Pasted Text',

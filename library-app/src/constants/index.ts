@@ -16,13 +16,14 @@ export const STORAGE_KEYS = {
   getCollectionsKey: () => `collections`,
 };
 
-export const THEMES = ['parchment', 'modern', 'current', 'veil'] as const;
+export const THEMES = ['parchment', 'modern', 'current', 'veil', 'apple'] as const;
 
 export const THEME_AVAILABILITY: Record<ThemeName, ThemeName[]> = {
   parchment: ['parchment', 'modern'],
   modern: ['parchment', 'modern'],
   current: ['parchment', 'current'],
   veil: ['parchment', 'veil'],
+  apple: ['apple', 'parchment'],
 };
 
 export const THEME_LABELS: Record<ThemeName, string> = {
@@ -30,6 +31,7 @@ export const THEME_LABELS: Record<ThemeName, string> = {
   modern: '✦ Modern',
   current: '◆ Current',
   veil: '✧ Veil',
+  apple: '🍎 Clean',
 };
 
 export const HIGHLIGHT_COLORS = ['yellow', 'green', 'pink', 'blue'] as const;

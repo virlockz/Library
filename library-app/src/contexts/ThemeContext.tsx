@@ -14,7 +14,7 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<ThemeName>('parchment');
+  const [theme, setThemeState] = useState<ThemeName>('apple');
 
   useEffect(() => {
     AsyncStorage.getItem(STORAGE_KEYS.APP_THEME).then((saved) => {

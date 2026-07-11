@@ -23,7 +23,7 @@ export interface Page {
   body: string;
 }
 
-export type ThemeName = 'parchment' | 'modern' | 'current' | 'veil';
+export type ThemeName = 'parchment' | 'modern' | 'current' | 'veil' | 'apple';
 
 export interface Note {
   id: string;

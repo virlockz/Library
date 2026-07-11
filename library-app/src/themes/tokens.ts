@@ -57,6 +57,17 @@ export const THEME_TOKENS: Record<ThemeName, ThemeTokens> = {
     borderMid: 'rgba(255,255,255,0.12)',
     tab: '#100E18',
   },
+  apple: {
+    bg: '#F2F2F7',
+    page: '#FFFFFF',
+    text: '#1C1C1E',
+    text2: '#8E8E93',
+    accent: '#FF6B35',
+    accentDim: 'rgba(255,107,53,0.08)',
+    border: 'rgba(0,0,0,0.06)',
+    borderMid: 'rgba(0,0,0,0.1)',
+    tab: '#FFFFFF',
+  },
 };
 
 export const THEME_COLORS: Record<ThemeName, { accent: string; bg: string }> = {
@@ -64,4 +75,5 @@ export const THEME_COLORS: Record<ThemeName, { accent: string; bg: string }> = {
   modern: { accent: '#C96442', bg: '#1C1B19' },
   current: { accent: '#00C2CC', bg: '#0D1F2D' },
   veil: { accent: '#B8962E', bg: '#0D0B14' },
+  apple: { accent: '#FF6B35', bg: '#F2F2F7' },
 };
