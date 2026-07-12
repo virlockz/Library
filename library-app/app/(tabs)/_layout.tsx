@@ -1,11 +1,12 @@
 import React from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
 import { Tabs } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Book, Bookmarks, Compass, MagnifyingGlass } from 'phosphor-react-native';
 import { useTheme } from '../../src/contexts/ThemeContext';
 
 export default function TabLayout() {
   const { tokens, theme } = useTheme();
+  const size = 24;
 
   return (
     <Tabs
@@ -35,36 +36,28 @@ export default function TabLayout() {
         name="reading-now"
         options={{
           title: 'Reading Now',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="book-outline" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color }) => <Book size={size} color={color} weight="light" />,
         }}
       />
       <Tabs.Screen
         name="library"
         options={{
           title: 'Library',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="library-outline" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color }) => <Bookmarks size={size} color={color} weight="light" />,
         }}
       />
       <Tabs.Screen
         name="browse"
         options={{
           title: 'Browse',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="compass-outline" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color }) => <Compass size={size} color={color} weight="light" />,
         }}
       />
       <Tabs.Screen
         name="search"
         options={{
           title: 'Search',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="search-outline" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color }) => <MagnifyingGlass size={size} color={color} weight="light" />,
         }}
       />
     </Tabs>
