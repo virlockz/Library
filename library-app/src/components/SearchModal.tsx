@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
   input: { flex: 1, borderWidth: 1, borderRadius: 8, padding: 10, fontFamily: FONTS.sans, fontSize: 15 },
   cancel: { fontFamily: FONTS.sansBold, fontSize: 14 },
   row: { flexDirection: 'row', alignItems: 'center', padding: 14, paddingHorizontal: 16, borderBottomWidth: 0.5, gap: 12 },
-  rowType: { fontSize: 18 },
+  rowType: { width: 24, alignItems: 'center' },
   rowBody: { flex: 1 },
   rowText: { fontFamily: FONTS.serif, fontSize: 15 },
   rowMeta: { fontFamily: FONTS.sans, fontSize: 12, marginTop: 2 },
