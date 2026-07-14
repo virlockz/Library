@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, StyleSheet, Alert, TextInput, Modal, Platform,
 } from 'react-native';
+import { Plus } from 'phosphor-react-native';
 import { useRouter } from 'expo-router';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { useLibrary } from '../../src/contexts/LibraryContext';
@@ -74,7 +75,7 @@ export default function LibraryScreen() {
       <View style={[styles.header, { paddingTop: Platform.OS === 'android' ? 40 : 50 }]}>
         <Text style={[styles.headerTitle, { color: tokens.text }]}>Library</Text>
         <TouchableOpacity style={[styles.addBtn, { backgroundColor: tokens.accent }]} onPress={handleImport}>
-          <Text style={styles.addBtnText}>+</Text>
+          <Plus size={20} color="#fff" weight="bold" />
         </TouchableOpacity>
       </View>
 

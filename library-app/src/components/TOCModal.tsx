@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, FlatList, StyleSheet, Modal } from 'react-native';
+import { X } from 'phosphor-react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { Chapter } from '../types';
 import { FONTS } from '../constants/fonts';
@@ -22,7 +23,7 @@ export function TOCModal({ visible, chapters, activeChapterId, onSelect, onClose
           <View style={[styles.header, { borderBottomColor: tokens.border }]}>
             <Text style={[styles.title, { color: tokens.accent }]}>Table of Contents</Text>
             <TouchableOpacity onPress={onClose}>
-              <Text style={[styles.close, { color: tokens.accent }]}>✕</Text>
+              <X size={20} color={tokens.accent} weight="bold" />
             </TouchableOpacity>
           </View>
           <FlatList

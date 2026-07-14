@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Platform, Animated, PanResponder, Dimensions } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { X, List, TextAa, BookOpen, Note, BookmarkSimple, Bookmark, PencilLine, Export } from 'phosphor-react-native';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { useLibrary } from '../../src/contexts/LibraryContext';
 import { useReadingPosition } from '../../src/hooks/useReadingPosition';
@@ -226,17 +227,17 @@ export default function ReaderScreen() {
       >
         <View style={styles.topOverlayRow}>
           <TouchableOpacity style={[styles.closeBtn, { borderColor: tokens.border }]} onPress={() => router.back()}>
-            <Text style={{ color: tokens.accent, fontFamily: FONTS.sansBold, fontSize: 16 }}>✕</Text>
+            <X size={18} color={tokens.accent} weight="bold" />
           </TouchableOpacity>
           <Text style={[styles.topOverlayTitle, { color: tokens.accent }]} numberOfLines={1}>
             {book.title}
           </Text>
           <View style={styles.topOverlayRight}>
             <TouchableOpacity style={[styles.iconBtn, { borderColor: tokens.border }]} onPress={() => setTocVisible(true)}>
-              <Text style={{ color: tokens.accent, fontSize: 16 }}>☰</Text>
+              <List size={18} color={tokens.accent} weight="light" />
             </TouchableOpacity>
             <TouchableOpacity style={[styles.iconBtn, { borderColor: tokens.border }]} onPress={() => setTypographyVisible(true)}>
-              <Text style={{ color: tokens.accent, fontSize: 16 }}>Aa</Text>
+              <TextAa size={18} color={tokens.accent} weight="light" />
             </TouchableOpacity>
             <ThemeToggle availableThemes={availableThemes} />
           </View>
@@ -257,7 +258,7 @@ export default function ReaderScreen() {
               onPress={() => setActiveTab('read')}
             >
               <Text style={[styles.tabText, { color: activeTab === 'read' ? tokens.accent : tokens.text2 }]}>
-                📖 Read
+                Read
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -265,7 +266,7 @@ export default function ReaderScreen() {
               onPress={() => setActiveTab('notes')}
             >
               <Text style={[styles.tabText, { color: activeTab === 'notes' ? tokens.accent : tokens.text2 }]}>
-                🗒 Notes ({notes.length})
+                Notes ({notes.length})
               </Text>
             </TouchableOpacity>
           </View>
@@ -307,7 +308,11 @@ export default function ReaderScreen() {
                   </Text>
                 </View>
                 <TouchableOpacity onPress={handleToggleBookmark}>
-                  <Text style={{ fontSize: 22 }}>{bookmarked ? '🔖' : '📑'}</Text>
+                  {bookmarked ? (
+                    <Bookmark size={24} color={tokens.accent} weight="fill" />
+                  ) : (
+                    <BookmarkSimple size={24} color={tokens.text2} weight="light" />
+                  )}
                 </TouchableOpacity>
               </View>
               <View style={styles.pageBody}>
@@ -346,7 +351,7 @@ export default function ReaderScreen() {
             </View>
             {bookmarks.length > 0 && (
               <View style={styles.section}>
-                <Text style={[styles.sectionTitle, { color: tokens.accent }]}>🔖 Bookmarks</Text>
+                <Text style={[styles.sectionTitle, { color: tokens.accent }]}>Bookmarks</Text>
                 {bookmarks.map((bm) => (
                   <TouchableOpacity
                     key={bm.id}
@@ -387,7 +392,7 @@ export default function ReaderScreen() {
           style={[styles.addNoteBtn, { backgroundColor: tokens.accent }]}
           onPress={() => setNoteModalVisible(true)}
         >
-          <Text style={styles.addNoteBtnText}>✎ Add Note</Text>
+          <Text style={styles.addNoteBtnText}>Add Note</Text>
         </TouchableOpacity>
       </Animated.View>
 

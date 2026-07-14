@@ -52,7 +52,7 @@ export default function BookNotesDetailScreen() {
             onPress={() => setFilter(f)}
           >
             <Text style={[styles.toggleText, { color: filter === f ? tokens.accent : tokens.text2 }]}>
-              {f === 'book' ? '📖 Book' : f === 'chapter' ? '📜 Chapter' : '🖊 Page'}
+              {f === 'book' ? 'Book' : f === 'chapter' ? 'Chapter' : 'Page'}
             </Text>
           </TouchableOpacity>
         ))}

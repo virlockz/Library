@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet, Modal } from 'react-native';
+import { BookOpen, Note as NoteIcon } from 'phosphor-react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLibrary } from '../contexts/LibraryContext';
 import { useNotes } from '../hooks/useNotes';
@@ -68,9 +69,9 @@ export function SearchModal({ visible, onClose, onOpenBook }: Props) {
               style={[styles.row, { borderBottomColor: tokens.border }]}
               onPress={() => { onOpenBook(item.bookId, item.pageIndex); onClose(); }}
             >
-              <Text style={[styles.rowType, { color: tokens.accent }]}>
-                {item.type === 'book' ? '📖' : '🗒'}
-              </Text>
+              <View style={styles.rowType}>
+                {item.type === 'book' ? <BookOpen size={18} color={tokens.accent} weight="light" /> : <NoteIcon size={18} color={tokens.accent} weight="light" />}
+              </View>
               <View style={styles.rowBody}>
                 <Text style={[styles.rowText, { color: tokens.text }]} numberOfLines={1}>{item.text}</Text>
                 <Text style={[styles.rowMeta, { color: tokens.text2 }]}>{item.bookTitle}</Text>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { Book } from 'phosphor-react-native';
 import { useRouter } from 'expo-router';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { useLibrary } from '../../src/contexts/LibraryContext';
@@ -84,7 +85,7 @@ export default function ReadingNowScreen() {
 
         {books.length === 0 && (
           <View style={styles.emptyState}>
-            <Text style={[styles.emptyEmoji]}>📖</Text>
+            <Book size={48} color={tokens.text2} weight="light" />
             <Text style={[styles.emptyTitle, { color: tokens.text }]}>No Books Yet</Text>
             <Text style={[styles.emptySub, { color: tokens.text2 }]}>Import a book from the Library tab to start reading</Text>
           </View>

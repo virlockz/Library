@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { X, PencilSimple, Scroll, BookOpen } from 'phosphor-react-native';
 import { Note } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
 import { FONTS } from '../constants/fonts';
@@ -23,11 +24,11 @@ export function NoteCard({ note, onDelete }: Props) {
   return (
     <View style={[styles.card, { backgroundColor: tokens.page, borderColor: tokens.border }]}>
       <TouchableOpacity style={styles.deleteBtn} onPress={() => onDelete(note.id)}>
-        <Text style={styles.deleteText}>✕</Text>
+        <X size={16} color={tokens.text2} weight="bold" />
       </TouchableOpacity>
       <View style={[styles.badge, { backgroundColor: badge.bg }]}>
         <Text style={[styles.badgeText, { color: badge.text }]}>
-          {note.type === 'page' ? '🖊' : note.type === 'chapter' ? '📜' : '📖'} {note.type}
+          {note.type === 'page' ? 'Page' : note.type === 'chapter' ? 'Chapter' : 'Book'}
         </Text>
       </View>
       <Text style={[styles.text, { color: tokens.text }]}>{note.text}</Text>

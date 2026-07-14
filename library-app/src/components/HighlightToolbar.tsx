@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { X } from 'phosphor-react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { FONTS } from '../constants/fonts';
 
@@ -30,7 +31,7 @@ export function HighlightToolbar({ visible, onHighlight, onClear }: Props) {
         />
       ))}
       <TouchableOpacity style={styles.clearBtn} onPress={onClear}>
-        <Text style={[styles.clearText, { color: tokens.text2 }]}>✕</Text>
+        <X size={16} color={tokens.text2} weight="bold" />
       </TouchableOpacity>
     </View>
   );
