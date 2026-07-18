@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
-import { useTheme } from '../contexts/ThemeContext';
 import { FONTS } from '../constants/fonts';
 
 const COVER_COLORS = [
@@ -18,6 +17,14 @@ function hashString(str: string): number {
   return Math.abs(hash);
 }
 
+function darkenColor(hex: string, amount: number): string {
+  const num = parseInt(hex.replace('#', ''), 16);
+  const r = Math.max(0, (num >> 16) - amount);
+  const g = Math.max(0, ((num >> 8) & 0x00FF) - amount);
+  const b = Math.max(0, (num & 0x0000FF) - amount);
+  return `#${(r << 16 | g << 8 | b).toString(16).padStart(6, '0')}`;
+}
+
 interface Props {
   title: string;
   coverImage?: string;
@@ -25,9 +32,9 @@ interface Props {
 }
 
 export function BookCover({ title, coverImage, size = 80 }: Props) {
-  const { tokens } = useTheme();
   const colorIndex = hashString(title) % COVER_COLORS.length;
   const bgColor = COVER_COLORS[colorIndex];
+  const darkBg = darkenColor(bgColor, 40);
   const initials = title
     .split(/\s+/)
     .slice(0, 2)
@@ -35,23 +42,36 @@ export function BookCover({ title, coverImage, size = 80 }: Props) {
     .join('')
     .toUpperCase();
 
+  const coverWidth = size;
+  const coverHeight = size * 1.5;
+  const borderRadius = 3;
+
+  const shadowStyle = {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.18,
+    shadowRadius: 8,
+    elevation: 4,
+  };
+
   if (coverImage) {
     return (
-      <View style={[styles.coverWrap, { width: size, height: size * 1.4, borderRadius: size * 0.06 }]}>
+      <View style={[styles.coverWrap, { width: coverWidth, height: coverHeight, borderRadius, ...shadowStyle }]}>
         <Image
           source={{ uri: coverImage }}
-          style={[styles.image, { borderRadius: size * 0.06 }]}
+          style={[styles.image, { borderRadius }]}
           resizeMode="cover"
         />
-        <View style={[styles.spine, { backgroundColor: 'rgba(0,0,0,0.1)' }]} />
       </View>
     );
   }
 
   return (
-    <View style={[styles.cover, { width: size, height: size * 1.4, backgroundColor: bgColor, borderRadius: size * 0.06 }]}>
-      <Text style={[styles.initials, { fontSize: size * 0.3 }]}>{initials}</Text>
-      <View style={[styles.spine, { backgroundColor: 'rgba(255,255,255,0.15)' }]} />
+    <View style={[styles.cover, { width: coverWidth, height: coverHeight, borderRadius, ...shadowStyle }]}>
+      <View style={[styles.gradient, { backgroundColor: bgColor }]}>
+        <View style={[styles.gradientOverlay, { backgroundColor: darkBg }]} />
+      </View>
+      <Text style={[styles.initials, { fontSize: size * 0.28 }]}>{initials}</Text>
     </View>
   );
 }
@@ -69,16 +89,25 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
+  gradient: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  gradientOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    opacity: 0.3,
+  },
   initials: {
     fontFamily: FONTS.serifBold,
-    color: 'rgba(255,255,255,0.9)',
+    color: 'rgba(255,255,255,0.92)',
     letterSpacing: 2,
-  },
-  spine: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    bottom: 0,
-    width: 3,
+    zIndex: 1,
   },
 });

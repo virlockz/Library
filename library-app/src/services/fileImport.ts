@@ -11,13 +11,7 @@ function generateId(): string {
 }
 
 function getDefaultTheme(ext: string): ThemeName {
-  switch (ext) {
-    case '.epub': return 'apple';
-    case '.pdf': return 'apple';
-    case '.md': return 'apple';
-    case '.txt': return 'apple';
-    default: return 'apple';
-  }
+  return 'light';
 }
 
 function chaptersToPages(chapters: Chapter[]): Chapter[] {
@@ -153,7 +147,7 @@ export async function importPastedText(text: string, title: string): Promise<Boo
     sourceType: 'pasted',
     filePath: '',
     addedAt: new Date().toISOString(),
-    defaultTheme: 'apple',
+    defaultTheme: 'light',
     chapters: [{
       id: 'chapter-1',
       title: title || 'Pasted Text',

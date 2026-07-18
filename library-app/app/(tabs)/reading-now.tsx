@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Platform } from 'react-native';
-import { Book } from 'phosphor-react-native';
+import { BookOpen } from 'phosphor-react-native';
 import { useRouter } from 'expo-router';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { useLibrary } from '../../src/contexts/LibraryContext';
@@ -8,26 +8,34 @@ import { useRecentlyOpened } from '../../src/hooks/useRecentlyOpened';
 import { useReadingPosition } from '../../src/hooks/useReadingPosition';
 import { BookCover } from '../../src/components/BookCover';
 import { ReadingProgressBar } from '../../src/components/ReadingProgressBar';
+import { Book } from '../../src/types';
 import { FONTS } from '../../src/constants/fonts';
 
-function ReadingBookCard({ book, onPress }: { book: any; onPress: () => void }) {
+function CarouselCard({ book, onPress }: { book: Book; onPress: () => void }) {
   const { tokens } = useTheme();
   const { position } = useReadingPosition(book.id);
   const progress = book.pageCount > 0 ? (position / book.pageCount) * 100 : 0;
 
   return (
-    <TouchableOpacity style={styles.readingCard} onPress={onPress} activeOpacity={0.7}>
+    <TouchableOpacity style={styles.carouselCard} onPress={onPress} activeOpacity={0.7}>
       <BookCover title={book.title} coverImage={book.coverImage} size={120} />
-      <View style={styles.readingInfo}>
-        <Text style={[styles.readingTitle, { color: tokens.text }]} numberOfLines={2}>{book.title}</Text>
-        {progress > 0 && (
-          <View style={styles.progressWrap}>
-            <ReadingProgressBar progress={progress} />
-            <Text style={[styles.progressText, { color: tokens.text2 }]}>{Math.round(progress)}%</Text>
-          </View>
-        )}
-      </View>
+      {progress > 0 && (
+        <View style={styles.carouselProgress}>
+          <ReadingProgressBar progress={progress} />
+        </View>
+      )}
+      <Text style={[styles.carouselTitle, { color: tokens.text }]} numberOfLines={2}>{book.title}</Text>
     </TouchableOpacity>
+  );
+}
+
+function HorizontalCarousel({ books, onBookPress }: { books: Book[]; onBookPress: (book: Book) => void }) {
+  return (
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.carouselScroll}>
+      {books.map((book) => (
+        <CarouselCard key={book.id} book={book} onPress={() => onBookPress(book)} />
+      ))}
+    </ScrollView>
   );
 }
 
@@ -37,13 +45,17 @@ export default function ReadingNowScreen() {
   const { recent } = useRecentlyOpened();
   const router = useRouter();
 
-  const recentBooks = recent
+  const continueReading = recent
     .map((r) => books.find((b) => b.id === r.bookId))
-    .filter(Boolean);
+    .filter(Boolean) as Book[];
 
-  const unreadBooks = books
+  // "Want to Read" — books with no reading progress
+  const wantToRead = books
     .filter((b) => !recent.some((r) => r.bookId === b.id))
-    .slice(0, 6);
+    .slice(0, 10);
+
+  // "Finished" — empty for now (would need reading position to determine)
+  const finished: Book[] = [];
 
   return (
     <View style={[styles.container, { backgroundColor: tokens.bg }]}>
@@ -52,40 +64,48 @@ export default function ReadingNowScreen() {
       </View>
 
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
-        {recentBooks.length > 0 && (
+        {/* Continue Reading — horizontal carousel */}
+        {continueReading.length > 0 && (
           <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: tokens.text2 }]}>Continue Reading</Text>
-            {recentBooks.map((book) => book && (
-              <ReadingBookCard
-                key={book.id}
-                book={book}
-                onPress={() => router.push(`/reader/${book.id}`)}
-              />
-            ))}
+            <View style={styles.sectionHeader}>
+              <Text style={[styles.sectionTitle, { color: tokens.text }]}>Continue Reading</Text>
+              <TouchableOpacity>
+                <Text style={[styles.seeAll, { color: tokens.accent }]}>See All</Text>
+              </TouchableOpacity>
+            </View>
+            <HorizontalCarousel books={continueReading} onBookPress={(b) => router.push(`/reader/${b.id}`)} />
           </View>
         )}
 
-        {unreadBooks.length > 0 && (
+        {/* Want to Read — horizontal carousel */}
+        {wantToRead.length > 0 && (
           <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: tokens.text2 }]}>Books</Text>
-            <View style={styles.grid}>
-              {unreadBooks.map((book) => (
-                <TouchableOpacity
-                  key={book.id}
-                  style={styles.gridItem}
-                  onPress={() => router.push(`/reader/${book.id}`)}
-                >
-                  <BookCover title={book.title} coverImage={book.coverImage} size={110} />
-                  <Text style={[styles.gridTitle, { color: tokens.text }]} numberOfLines={2}>{book.title}</Text>
-                </TouchableOpacity>
-              ))}
+            <View style={styles.sectionHeader}>
+              <Text style={[styles.sectionTitle, { color: tokens.text }]}>Want to Read</Text>
+              <TouchableOpacity>
+                <Text style={[styles.seeAll, { color: tokens.accent }]}>See All</Text>
+              </TouchableOpacity>
             </View>
+            <HorizontalCarousel books={wantToRead} onBookPress={(b) => router.push(`/reader/${b.id}`)} />
+          </View>
+        )}
+
+        {/* Finished — horizontal carousel */}
+        {finished.length > 0 && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={[styles.sectionTitle, { color: tokens.text }]}>Finished</Text>
+              <TouchableOpacity>
+                <Text style={[styles.seeAll, { color: tokens.accent }]}>See All</Text>
+              </TouchableOpacity>
+            </View>
+            <HorizontalCarousel books={finished} onBookPress={(b) => router.push(`/reader/${b.id}`)} />
           </View>
         )}
 
         {books.length === 0 && (
           <View style={styles.emptyState}>
-            <Book size={48} color={tokens.text2} weight="light" />
+            <BookOpen size={48} color={tokens.text2} weight="light" />
             <Text style={[styles.emptyTitle, { color: tokens.text }]}>No Books Yet</Text>
             <Text style={[styles.emptySub, { color: tokens.text2 }]}>Import a book from the Library tab to start reading</Text>
           </View>
@@ -98,26 +118,18 @@ export default function ReadingNowScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   header: { paddingHorizontal: 20, paddingBottom: 12 },
-  headerTitle: { fontFamily: FONTS.serifBold, fontSize: 34 },
+  headerTitle: { fontFamily: FONTS.sansBold, fontSize: 34 },
   scroll: { flex: 1 },
-  scrollContent: { padding: 20, paddingBottom: 100 },
+  scrollContent: { paddingBottom: 100 },
   section: { marginBottom: 28 },
-  sectionTitle: { fontFamily: FONTS.sans, fontSize: 13, fontWeight: '600', marginBottom: 14, textTransform: 'uppercase', letterSpacing: 0.5 },
-  readingCard: {
-    flexDirection: 'row',
-    gap: 16,
-    marginBottom: 20,
-    alignItems: 'center',
-  },
-  readingInfo: { flex: 1 },
-  readingTitle: { fontFamily: FONTS.serifBold, fontSize: 18, lineHeight: 23, marginBottom: 8 },
-  progressWrap: { gap: 4 },
-  progressText: { fontFamily: FONTS.sans, fontSize: 12 },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 16 },
-  gridItem: { width: 110 },
-  gridTitle: { fontFamily: FONTS.sans, fontSize: 12, lineHeight: 16, marginTop: 6 },
+  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', paddingHorizontal: 20, marginBottom: 14 },
+  sectionTitle: { fontFamily: FONTS.sansBold, fontSize: 20 },
+  seeAll: { fontFamily: FONTS.sans, fontSize: 15 },
+  carouselScroll: { paddingHorizontal: 20, gap: 16 },
+  carouselCard: { width: 120 },
+  carouselProgress: { marginTop: 6, borderRadius: 2, overflow: 'hidden' },
+  carouselTitle: { fontFamily: FONTS.sans, fontSize: 12, lineHeight: 16, marginTop: 6 },
   emptyState: { alignItems: 'center', marginTop: 100 },
-  emptyEmoji: { fontSize: 48, marginBottom: 16 },
-  emptyTitle: { fontFamily: FONTS.serifBold, fontSize: 22, marginBottom: 8 },
+  emptyTitle: { fontFamily: FONTS.sansBold, fontSize: 22, marginTop: 16, marginBottom: 8 },
   emptySub: { fontFamily: FONTS.sans, fontSize: 14, textAlign: 'center' },
 });

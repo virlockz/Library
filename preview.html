@@ -3,103 +3,182 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Library App - Screen Preview</title>
+<title>Library App - Apple Books Preview</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro', 'Helvetica Neue', sans-serif; background: #000; color: #fff; padding: 40px 20px; }
+  .phone-screen { background: #000; }
   h1 { text-align: center; font-size: 28px; margin-bottom: 8px; font-weight: 600; }
   .subtitle { text-align: center; color: #8e8e93; margin-bottom: 40px; font-size: 14px; }
+  .theme-tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 32px; }
+  .theme-tab { padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.08); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); color: #8e8e93; }
+  .theme-tab.active { background: rgba(0,122,255,0.3); color: #fff; border-color: rgba(0,122,255,0.5); }
   .screens { display: flex; flex-wrap: wrap; gap: 32px; justify-content: center; max-width: 1400px; margin: 0 auto; }
   .screen-label { text-align: center; font-size: 13px; font-weight: 600; color: #8e8e93; margin-bottom: 12px; letter-spacing: 0.5px; text-transform: uppercase; }
   .phone { width: 375px; height: 812px; border-radius: 40px; overflow: hidden; border: 3px solid #333; position: relative; flex-shrink: 0; }
-  .phone-screen { width: 100%; height: 100%; background: #000; display: flex; flex-direction: column; }
+  .phone-screen { width: 100%; height: 100%; display: flex; flex-direction: column; background: #000; position: relative; }
+
+  /* Glass effect base */
+  .glass { backdrop-filter: blur(40px) saturate(180%); -webkit-backdrop-filter: blur(40px) saturate(180%); }
 
   /* Status bar */
-  .status-bar { height: 50px; background: #fff; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 4px; }
+  .status-bar { height: 50px; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 4px; background: rgba(0,0,0,0.5); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
   .status-bar .notch { width: 120px; height: 28px; background: #000; border-radius: 20px; }
 
-  /* Tab bar */
-  .tab-bar { height: 85px; background: #1C1C1E; border-top: 0.5px solid rgba(255,255,255,0.08); display: flex; align-items: flex-start; justify-content: space-around; padding-top: 8px; padding-bottom: 25px; }
+  /* Tab bar — glass effect */
+  .tab-bar { height: 85px; display: flex; align-items: flex-start; justify-content: space-around; padding-top: 8px; padding-bottom: 25px; backdrop-filter: blur(40px) saturate(180%); -webkit-backdrop-filter: blur(40px) saturate(180%); background: rgba(28,28,30,0.72); border-top: 0.5px solid rgba(255,255,255,0.08); }
   .tab-item { display: flex; flex-direction: column; align-items: center; gap: 3px; }
-  .tab-icon { font-size: 22px; opacity: 0.4; }
-  .tab-icon.active { opacity: 1; }
-  .tab-label { font-size: 10px; font-weight: 600; color: #8e8e93; }
-  .tab-label.active { color: #FF6B35; }
+  .tab-icon { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; }
+  .tab-icon svg { width: 22px; height: 22px; }
+  .tab-label { font-size: 11px; font-weight: 400; color: #8e8e93; }
+  .tab-label.active { color: #007AFF; }
 
-  /* Header */
-  .page-header { padding: 0 20px 12px; background: #1C1C1E; }
-  .page-title { font-size: 34px; font-weight: 700; color: #FFFFFF; }
+  /* Header — glass effect */
+  .page-header { padding: 0 20px 12px; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); background: rgba(0,0,0,0.5); }
+  .page-title { font-size: 34px; font-weight: 700; color: #FFFFFF; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro', 'Helvetica Neue', sans-serif; }
 
   /* Content */
-  .content { flex: 1; overflow-y: auto; padding: 0 20px 20px; }
+  .content { flex: 1; overflow-y: auto; padding: 0 20px 20px; scrollbar-width: none; -ms-overflow-style: none; }
+  .content::-webkit-scrollbar { display: none; }
 
-  /* Book grid */
-  .book-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  /* Book grid — Apple Books style: no titles under covers */
+  .book-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
   .book-card { display: flex; flex-direction: column; }
-  .book-cover { width: 100%; aspect-ratio: 1/1.4; border-radius: 6px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
-  .book-cover .spine { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: rgba(255,255,255,0.15); }
-  .book-cover .initials { font-size: 32px; font-weight: 600; color: rgba(255,255,255,0.9); letter-spacing: 2px; }
-  .book-title { font-size: 13px; color: #FFFFFF; margin-top: 6px; line-height: 1.4; }
-  .book-meta { font-size: 11px; color: #8e8e93; margin-top: 2px; }
+  .book-cover { width: 100%; aspect-ratio: 2/3; border-radius: 3px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.18); }
+  .book-cover .initials { font-size: 24px; font-weight: 600; color: rgba(255,255,255,0.92); letter-spacing: 2px; z-index: 1; }
+  .book-cover .gradient { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
+  .book-cover .gradient-dark { position: absolute; top: 0; left: 0; right: 0; bottom: 0; opacity: 0.3; }
 
   /* Progress bar */
-  .progress-bar { height: 3px; background: rgba(255,255,255,0.08); border-radius: 2px; margin-top: 6px; overflow: hidden; }
-  .progress-fill { height: 3px; background: #FF6B35; border-radius: 2px; }
+  .progress-bar { height: 2px; background: rgba(255,255,255,0.08); border-radius: 1px; margin-top: 6px; overflow: hidden; }
+  .progress-fill { height: 2px; background: #007AFF; border-radius: 1px; }
 
-  /* Reading Now */
+  /* Thin progress bar — always visible at absolute bottom */
+  .thin-progress { position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: rgba(255,255,255,0.08); z-index: 50; }
+  .thin-progress-fill { height: 2px; background: #007AFF; }
+
+  /* Recently opened */
+  .recent-scroll { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: none; -ms-overflow-style: none; }
+  .recent-scroll::-webkit-scrollbar { display: none; }
+  .recent-card { width: 100px; flex-shrink: 0; }
+  .recent-card .book-cover { width: 100px; height: 150px; }
+  .recent-title { font-size: 12px; color: #FFFFFF; margin-top: 6px; line-height: 1.4; }
+
+  /* Reading card */
   .reading-card { display: flex; gap: 16px; margin-bottom: 20px; align-items: center; }
   .reading-card .book-cover { width: 100px; flex-shrink: 0; }
   .reading-info { flex: 1; }
   .reading-title { font-size: 18px; font-weight: 600; color: #FFFFFF; line-height: 1.3; }
 
-  /* Stats */
+  /* Collections — glass rows */
+  .collection-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; border-bottom: 0.5px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.04); border-radius: 10px; margin-bottom: 2px; }
+  .collection-name { font-size: 16px; color: #FFFFFF; }
+  .collection-right { display: flex; align-items: center; gap: 4px; }
+  .collection-count { font-size: 14px; color: #8e8e93; }
+
+  /* Stats — glass cards */
   .stats-row { display: flex; gap: 12px; margin-bottom: 24px; }
-  .stat-card { flex: 1; background: rgba(255,107,53,0.12); border-radius: 12px; padding: 16px; text-align: center; }
-  .stat-value { font-size: 28px; font-weight: 700; color: #FF6B35; }
+  .stat-card { flex: 1; background: rgba(255,255,255,0.06); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 16px; text-align: center; }
+  .stat-value { font-size: 28px; font-weight: 700; color: #007AFF; }
   .stat-label { font-size: 12px; color: #8e8e93; margin-top: 4px; }
 
-  /* Genre grid */
-  .genre-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
-  .genre-card { border-radius: 12px; padding: 16px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.04); }
-  .genre-emoji { font-size: 28px; margin-bottom: 8px; }
-  .genre-name { font-size: 14px; font-weight: 600; color: #FFFFFF; }
-  .genre-count { font-size: 12px; color: #8e8e93; margin-top: 2px; }
+  /* Genre list — glass rows */
+  .genre-row { display: flex; align-items: center; padding: 12px 14px; border-bottom: 0.5px solid rgba(255,255,255,0.06); gap: 14px; background: rgba(255,255,255,0.04); border-radius: 10px; margin-bottom: 2px; }
+  .genre-icon-wrap { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.08); }
+  .genre-icon-wrap svg { width: 20px; height: 20px; }
+  .genre-name { font-size: 16px; color: #FFFFFF; flex: 1; }
+  .genre-right { display: flex; align-items: center; gap: 4px; }
+  .genre-count { font-size: 14px; color: #8e8e93; }
+  .chevron { width: 16px; height: 16px; opacity: 0.4; }
 
-  /* Search */
-  .search-input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,107,53,0.12); font-size: 16px; color: #FFFFFF; margin-bottom: 16px; }
+  /* Search — glass bar */
+  .search-bar { display: flex; align-items: center; border-radius: 10px; padding: 10px 12px; gap: 8px; margin-bottom: 16px; background: rgba(118,118,128,0.24); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+  .search-bar svg { width: 18px; height: 18px; flex-shrink: 0; color: #8e8e93; }
+  .search-input { flex: 1; border: none; background: transparent; font-size: 16px; color: #FFFFFF; font-family: inherit; outline: none; }
   .search-input::placeholder { color: #8e8e93; }
+  .result-row { display: flex; align-items: center; padding: 12px 0; border-bottom: 0.5px solid rgba(255,255,255,0.06); gap: 14px; }
+  .result-info { flex: 1; }
+  .result-title { font-size: 16px; color: #FFFFFF; line-height: 1.3; }
+  .result-meta { font-size: 12px; color: #8e8e93; margin-top: 2px; }
+
+  /* Tip — glass card */
+  .tip-card { border-radius: 12px; padding: 16px; margin-top: 28px; background: rgba(255,255,255,0.06); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.08); }
+  .tip-header { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+  .tip-header svg { width: 16px; height: 16px; color: #007AFF; }
+  .tip-title { font-size: 14px; font-weight: 600; color: #007AFF; }
+  .tip-text { font-size: 13px; color: #8e8e93; line-height: 1.5; }
 
   /* Section titles */
-  .section-title { font-size: 13px; font-weight: 600; color: #8e8e93; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 14px; }
+  .section-title { font-size: 20px; font-weight: 700; color: #FFFFFF; margin-bottom: 12px; }
+  .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
 
   /* Reader screen */
-  .reader-bg { background: #000; }
-  .reader-progress { height: 3px; background: rgba(255,255,255,0.08); }
-  .reader-progress-fill { height: 3px; background: #FF6B35; width: 65%; }
-  .reader-content { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 40px; }
-  .reader-chapter { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #FF6B35; margin-bottom: 8px; }
-  .reader-heading { font-size: 28px; font-weight: 700; color: #FF6B35; line-height: 1.2; margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .reader-content { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 40px; background: #000; }
+  .reader-chapter { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #007AFF; margin-bottom: 8px; }
+  .reader-heading { font-size: 28px; font-weight: 700; color: #007AFF; line-height: 1.2; margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid rgba(255,255,255,0.08); }
   .reader-label { font-size: 12px; color: #8e8e93; font-style: italic; margin-bottom: 16px; }
   .reader-body { font-family: Georgia, 'Times New Roman', serif; font-size: 17px; line-height: 1.85; color: #FFFFFF; }
   .reader-body p { margin-bottom: 14px; }
-  .reader-nav { display: flex; justify-content: center; align-items: center; gap: 16px; padding: 12px; border-top: 1px solid rgba(255,255,255,0.08); background: #1C1C1E; }
-  .reader-nav-btn { padding: 8px 18px; border: 1.5px solid #FF6B35; border-radius: 8px; font-size: 14px; font-weight: 600; color: #FF6B35; background: rgba(255,107,53,0.12); }
-  .reader-nav-btn.disabled { opacity: 0.3; }
-  .reader-indicator { font-size: 13px; color: #8e8e93; }
 
-  /* Notes screen */
-  .note-card { background: #1C1C1E; border-radius: 8px; padding: 12px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.08); }
+  /* Bottom toolbar — glass effect (hidden by default, shown on tap) */
+  .reader-toolbar { backdrop-filter: blur(40px) saturate(180%); -webkit-backdrop-filter: blur(40px) saturate(180%); background: rgba(28,28,30,0.72); border-top: 0.5px solid rgba(255,255,255,0.08); }
+  .toolbar-nav { display: flex; justify-content: space-between; align-items: center; padding: 8px 24px; }
+  .toolbar-nav svg { width: 20px; height: 20px; cursor: pointer; color: #007AFF; }
+  .toolbar-nav svg.disabled { color: #8e8e93; }
+  .reader-pct { font-size: 14px; color: #8e8e93; }
+  .toolbar-controls { display: flex; justify-content: space-around; padding: 8px 0 20px; border-top: 0.5px solid rgba(255,255,255,0.08); }
+  .control-btn { padding: 8px; cursor: pointer; color: #8e8e93; }
+  .control-btn svg { width: 20px; height: 20px; }
+
+  /* Top overlay — glass effect */
+  .top-overlay { position: absolute; top: 50px; left: 0; right: 0; z-index: 10; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; backdrop-filter: blur(40px) saturate(180%); -webkit-backdrop-filter: blur(40px) saturate(180%); background: rgba(0,0,0,0.65); border-bottom: 0.5px solid rgba(255,255,255,0.08); }
+  .close-btn { width: 36px; height: 36px; border-radius: 20px; border: 1.5px solid rgba(255,255,255,0.12); display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); background: rgba(255,255,255,0.08); }
+  .close-btn svg { width: 16px; height: 16px; color: #007AFF; }
+  .top-title { font-size: 16px; font-weight: 600; color: #FFFFFF; flex: 1; text-align: center; margin: 0 8px; }
+  .top-right { display: flex; align-items: center; gap: 8px; }
+  .icon-btn { width: 36px; height: 36px; border-radius: 8px; border: 1.5px solid rgba(255,255,255,0.12); display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); background: rgba(255,255,255,0.08); }
+  .icon-btn svg { width: 18px; height: 18px; color: #FFFFFF; }
+  .theme-btn { width: 36px; height: 36px; border-radius: 8px; border: 1.5px solid rgba(255,255,255,0.12); display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); background: rgba(255,255,255,0.08); }
+  .theme-btn svg { width: 18px; height: 18px; color: #007AFF; }
+
+  /* Tabs — glass */
+  .reader-tabs { display: flex; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); background: rgba(0,0,0,0.5); border-bottom: 0.5px solid rgba(255,255,255,0.08); }
+  .reader-tab { padding: 10px 18px; font-size: 13px; font-weight: 600; border-bottom: 3px solid transparent; color: #8e8e93; }
+  .tab-active { color: #007AFF; border-bottom-color: #007AFF; }
+
+  /* Chapter nav — glass pills */
+  .chapter-nav { display: flex; gap: 6px; padding: 10px; overflow-x: auto; border-bottom: 0.5px solid rgba(255,255,255,0.08); background: rgba(0,0,0,0.3); scrollbar-width: none; -ms-overflow-style: none; }
+  .chapter-nav::-webkit-scrollbar { display: none; }
+  .chapter-pill { padding: 5px 14px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); font-size: 12px; font-weight: 600; color: #8e8e93; white-space: nowrap; }
+  .chapter-pill.active { background: rgba(0,122,255,0.25); border-color: rgba(0,122,255,0.5); color: #007AFF; }
+
+  /* Note card — glass */
+  .note-card { border-radius: 8px; padding: 12px; margin-bottom: 10px; background: rgba(255,255,255,0.06); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.08); }
   .note-badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
-  .note-badge.page { background: rgba(255,107,53,0.12); color: #FF6B35; }
-  .note-badge.chapter { background: rgba(80,160,80,0.15); color: #2D6A2D; }
+  .note-badge.page { background: rgba(0,122,255,0.2); color: #007AFF; }
   .note-text { font-family: Georgia, serif; font-size: 15px; line-height: 1.6; color: #FFFFFF; }
   .note-meta { font-size: 11px; color: #8e8e93; margin-top: 6px; }
+
+  /* + button — glass */
+  .add-btn-glass { width: 32px; height: 32px; border-radius: 16px; background: rgba(0,122,255,0.35); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(0,122,255,0.5); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 20px; cursor: pointer; }
+
+  /* Highlight swatches */
+  .highlight-swatches { display: flex; gap: 8px; padding: 8px 12px; background: rgba(28,28,30,0.9); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 8px; border: 1px solid rgba(255,255,255,0.12); }
+  .swatch { width: 22px; height: 22px; border-radius: 11px; cursor: pointer; border: 2px solid transparent; }
+  .swatch:hover { border-color: rgba(255,255,255,0.5); }
 </style>
 </head>
 <body>
 
 <h1>Library App</h1>
-<p class="subtitle">Apple Books-style Screen Preview</p>
+<p class="subtitle">Apple Books-Style Screen Preview — Updated to Match Real Apple Books</p>
+
+<div class="theme-tabs">
+  <div class="theme-tab active">Light</div>
+  <div class="theme-tab">Sepia</div>
+  <div class="theme-tab">Dark</div>
+  <div class="theme-tab">Night</div>
+</div>
 
 <div class="screens">
 
@@ -108,43 +187,44 @@
     <div class="screen-label">Reading Now</div>
     <div class="phone">
       <div class="phone-screen">
-        <div class="status-bar"><div class="notch"></div></div>
+        <div class="status-bar glass"><div class="notch"></div></div>
         <div class="page-header"><div class="page-title">Reading Now</div></div>
         <div class="content">
-          <div class="section-title">Continue Reading</div>
+          <div class="section-title">CONTINUE READING</div>
           <div class="reading-card">
-            <div class="book-cover" style="background:#8B4513"><div class="spine"></div><div class="initials">HA</div></div>
+            <div class="book-cover" style="background:#8B4513"><div class="gradient" style="background:#8B4513"></div><div class="gradient-dark" style="background:#5a2d0c"></div><div class="initials">HA</div></div>
             <div class="reading-info">
               <div class="reading-title">The Higher Intelligences</div>
               <div class="progress-bar"><div class="progress-fill" style="width:65%"></div></div>
-              <div class="book-meta">65% read</div>
+              <div class="book-meta" style="color:#8e8e93;font-size:12px;margin-top:4px">65% read</div>
             </div>
           </div>
           <div class="reading-card">
-            <div class="book-cover" style="background:#B8962E"><div class="spine"></div><div class="initials">HP</div></div>
+            <div class="book-cover" style="background:#B8962E"><div class="gradient" style="background:#B8962E"></div><div class="gradient-dark" style="background:#7a6419"></div><div class="initials">HP</div></div>
             <div class="reading-info">
               <div class="reading-title">The Hermetic Path</div>
               <div class="progress-bar"><div class="progress-fill" style="width:30%"></div></div>
-              <div class="book-meta">30% read</div>
+              <div class="book-meta" style="color:#8e8e93;font-size:12px;margin-top:4px">30% read</div>
             </div>
           </div>
-          <div class="section-title" style="margin-top:20px">Books</div>
+          <div class="section-title" style="margin-top:20px">NOT STARTED</div>
           <div class="book-grid">
             <div class="book-card">
-              <div class="book-cover" style="background:#C96442"><div class="spine"></div><div class="initials">AS</div></div>
-              <div class="book-title">The Architecture of the Soul</div>
+              <div class="book-cover" style="background:#C96442"><div class="gradient" style="background:#C96442"></div><div class="gradient-dark" style="background:#8a4229"></div><div class="initials">AS</div></div>
             </div>
             <div class="book-card">
-              <div class="book-cover" style="background:#6B5B95"><div class="spine"></div><div class="initials">MD</div></div>
-              <div class="book-title">The Man in the Depths</div>
+              <div class="book-cover" style="background:#6B5B95"><div class="gradient" style="background:#6B5B95"></div><div class="gradient-dark" style="background:#463c63"></div><div class="initials">MD</div></div>
+            </div>
+            <div class="book-card">
+              <div class="book-cover" style="background:#00C2CC"><div class="gradient" style="background:#00C2CC"></div><div class="gradient-dark" style="background:#007a82"></div><div class="initials">IT</div></div>
             </div>
           </div>
         </div>
-        <div class="tab-bar">
-          <div class="tab-item"><div class="tab-icon active">📖</div><div class="tab-label active">Reading Now</div></div>
-          <div class="tab-item"><div class="tab-icon">📚</div><div class="tab-label">Library</div></div>
-          <div class="tab-item"><div class="tab-icon">🔍</div><div class="tab-label">Browse</div></div>
-          <div class="tab-item"><div class="tab-icon">🔎</div><div class="tab-label">Search</div></div>
+        <div class="tab-bar glass">
+          <div class="tab-item"><div class="tab-icon"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M213.66,82.34l-56-56A8,8,0,0,0,152,24H56A16,16,0,0,0,40,40V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM160,51.31,188.69,80H160ZM200,216H56V40h88V88a8,8,0,0,0,8,8h48V216Zm-42.34-77.66a8,8,0,0,1-11.32,11.32L136,139.31V184a8,8,0,0,1-16,0V139.31l-10.34,10.35a8,8,0,0,1-11.32-11.32l24-24a8,8,0,0,1,11.32,0Z"/></svg></div><div class="tab-label active">Reading Now</div></div>
+          <div class="tab-item"><div class="tab-icon"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M224,72H180.28l17.6-17.6a8,8,0,0,0-11.32-11.32l-32,32a8,8,0,0,0,0,11.32l32,32a8,8,0,0,0,11.32-11.32L180.28,88H224a8,8,0,0,0,0-16ZM48,168H75.72l-17.6,17.6a8,8,0,0,0,11.32,11.32l32-32a8,8,0,0,0,0-11.32l-32-32A8,8,0,0,0,58.12,116.4L75.72,136H48a8,8,0,0,0,0,16Zm128-80H128a8,8,0,0,0-8,8v48a8,8,0,0,0,16,0V104h40a8,8,0,0,0,0-16ZM128,176h40a8,8,0,0,0,0-16H128a8,8,0,0,0,0,16Z"/></svg></div><div class="tab-label">Library</div></div>
+          <div class="tab-item"><div class="tab-icon"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm0-160a8,8,0,0,0-8,8v47.31L96.31,128a8,8,0,0,0,11.38,11.32L128,119.06V80A8,8,0,0,0,128,56Z"/></svg></div><div class="tab-label">Browse</div></div>
+          <div class="tab-item"><div class="tab-icon"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M230.66,200.66l-45.25-45.25A88.19,88.19,0,1,0,168,184a87.41,87.41,0,0,0-13.41-1.07,87.53,87.53,0,0,0-61,25.41l-45.25,45.25a8,8,0,0,0,11.32,11.32l45.25-45.25A88,88,0,1,0,184,168a87.41,87.41,0,0,0-1.07,13.41,87.53,87.53,0,0,0,25.41,61l45.25,45.25a8,8,0,0,0,11.32-11.32ZM128,208A80,80,0,1,1,208,128,80.09,80.09,0,0,1,128,208Z"/></svg></div><div class="tab-label">Search</div></div>
         </div>
       </div>
     </div>
@@ -155,46 +235,64 @@
     <div class="screen-label">Library</div>
     <div class="phone">
       <div class="phone-screen">
-        <div class="status-bar"><div class="notch"></div></div>
+        <div class="status-bar glass"><div class="notch"></div></div>
         <div class="page-header" style="display:flex;justify-content:space-between;align-items:center">
           <div class="page-title">Library</div>
-          <div style="width:32px;height:32px;border-radius:16px;background:#FF6B35;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;cursor:pointer">+</div>
+          <div class="add-btn-glass">+</div>
         </div>
         <div class="content">
+          <div class="section-title">RECENTLY OPENED</div>
+          <div class="recent-scroll">
+            <div class="recent-card">
+              <div class="book-cover" style="background:#8B4513"><div class="gradient" style="background:#8B4513"></div><div class="gradient-dark" style="background:#5a2d0c"></div><div class="initials">HA</div></div>
+              <div class="progress-bar"><div class="progress-fill" style="width:65%"></div></div>
+              <div class="recent-title">The Higher Intelligences</div>
+            </div>
+            <div class="recent-card">
+              <div class="book-cover" style="background:#B8962E"><div class="gradient" style="background:#B8962E"></div><div class="gradient-dark" style="background:#7a6419"></div><div class="initials">HP</div></div>
+              <div class="progress-bar"><div class="progress-fill" style="width:30%"></div></div>
+              <div class="recent-title">The Hermetic Path</div>
+            </div>
+            <div class="recent-card">
+              <div class="book-cover" style="background:#C96442"><div class="gradient" style="background:#C96442"></div><div class="gradient-dark" style="background:#8a4229"></div><div class="initials">AS</div></div>
+              <div class="recent-title">The Architecture of the Soul</div>
+            </div>
+          </div>
+
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:20px;margin-bottom:12px">
+            <div class="section-title" style="margin:0">COLLECTIONS</div>
+            <svg viewBox="0 0 256 256" fill="#007AFF" width="18" height="18" style="cursor:pointer"><path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z"/></svg>
+          </div>
+          <div class="collection-row"><div class="collection-name">All Books</div><div class="collection-right"><div class="collection-count">7</div><svg class="chevron" viewBox="0 0 256 256" fill="currentColor"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/></svg></div></div>
+          <div class="collection-row"><div class="collection-name">Want to Read</div><div class="collection-right"><div class="collection-count">0</div><svg class="chevron" viewBox="0 0 256 256" fill="currentColor"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/></svg></div></div>
+
+          <div class="section-title" style="margin-top:20px">ALL BOOKS</div>
           <div class="book-grid">
             <div class="book-card">
-              <div class="book-cover" style="background:#8B4513"><div class="spine"></div><div class="initials">HA</div></div>
-              <div class="book-title">The Higher Intelligences</div>
-              <div class="progress-bar"><div class="progress-fill" style="width:65%"></div></div>
+              <div class="book-cover" style="background:#8B4513"><div class="gradient" style="background:#8B4513"></div><div class="gradient-dark" style="background:#5a2d0c"></div><div class="initials">HA</div></div>
             </div>
             <div class="book-card">
-              <div class="book-cover" style="background:#B8962E"><div class="spine"></div><div class="initials">HP</div></div>
-              <div class="book-title">The Hermetic Path</div>
-              <div class="progress-bar"><div class="progress-fill" style="width:30%"></div></div>
+              <div class="book-cover" style="background:#B8962E"><div class="gradient" style="background:#B8962E"></div><div class="gradient-dark" style="background:#7a6419"></div><div class="initials">HP</div></div>
             </div>
             <div class="book-card">
-              <div class="book-cover" style="background:#C96442"><div class="spine"></div><div class="initials">AS</div></div>
-              <div class="book-title">The Architecture of the Soul</div>
+              <div class="book-cover" style="background:#C96442"><div class="gradient" style="background:#C96442"></div><div class="gradient-dark" style="background:#8a4229"></div><div class="initials">AS</div></div>
             </div>
             <div class="book-card">
-              <div class="book-cover" style="background:#6B5B95"><div class="spine"></div><div class="initials">MD</div></div>
-              <div class="book-title">The Man in the Depths</div>
+              <div class="book-cover" style="background:#6B5B95"><div class="gradient" style="background:#6B5B95"></div><div class="gradient-dark" style="background:#463c63"></div><div class="initials">MD</div></div>
             </div>
             <div class="book-card">
-              <div class="book-cover" style="background:#00C2CC"><div class="spine"></div><div class="initials">IT</div></div>
-              <div class="book-title">In The Zone</div>
+              <div class="book-cover" style="background:#00C2CC"><div class="gradient" style="background:#00C2CC"></div><div class="gradient-dark" style="background:#007a82"></div><div class="initials">IT</div></div>
             </div>
             <div class="book-card">
-              <div class="book-cover" style="background:#DD4124"><div class="spine"></div><div class="initials">TK</div></div>
-              <div class="book-title">The Kybalion Decoded</div>
+              <div class="book-cover" style="background:#DD4124"><div class="gradient" style="background:#DD4124"></div><div class="gradient-dark" style="background:#9a2c18"></div><div class="initials">TK</div></div>
             </div>
           </div>
         </div>
-        <div class="tab-bar">
-          <div class="tab-item"><div class="tab-icon">📖</div><div class="tab-label">Reading Now</div></div>
-          <div class="tab-item"><div class="tab-icon active">📚</div><div class="tab-label active">Library</div></div>
-          <div class="tab-item"><div class="tab-icon">🔍</div><div class="tab-label">Browse</div></div>
-          <div class="tab-item"><div class="tab-icon">🔎</div><div class="tab-label">Search</div></div>
+        <div class="tab-bar glass">
+          <div class="tab-item"><div class="tab-icon"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M213.66,82.34l-56-56A8,8,0,0,0,152,24H56A16,16,0,0,0,40,40V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM160,51.31,188.69,80H160ZM200,216H56V40h88V88a8,8,0,0,0,8,8h48V216Zm-42.34-77.66a8,8,0,0,1-11.32,11.32L136,139.31V184a8,8,0,0,1-16,0V139.31l-10.34,10.35a8,8,0,0,1-11.32-11.32l24-24a8,8,0,0,1,11.32,0Z"/></svg></div><div class="tab-label">Reading Now</div></div>
+          <div class="tab-item"><div class="tab-icon"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M224,72H180.28l17.6-17.6a8,8,0,0,0-11.32-11.32l-32,32a8,8,0,0,0,0,11.32l32,32a8,8,0,0,0,11.32-11.32L180.28,88H224a8,8,0,0,0,0-16ZM48,168H75.72l-17.6,17.6a8,8,0,0,0,11.32,11.32l32-32a8,8,0,0,0,0-11.32l-32-32A8,8,0,0,0,58.12,116.4L75.72,136H48a8,8,0,0,0,0,16Zm128-80H128a8,8,0,0,0-8,8v48a8,8,0,0,0,16,0V104h40a8,8,0,0,0,0-16ZM128,176h40a8,8,0,0,0,0-16H128a8,8,0,0,0,0,16Z"/></svg></div><div class="tab-label active">Library</div></div>
+          <div class="tab-item"><div class="tab-icon"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm0-160a8,8,0,0,0-8,8v47.31L96.31,128a8,8,0,0,0,11.38,11.32L128,119.06V80A8,8,0,0,0,128,56Z"/></svg></div><div class="tab-label">Browse</div></div>
+          <div class="tab-item"><div class="tab-icon"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M230.66,200.66l-45.25-45.25A88.19,88.19,0,1,0,168,184a87.41,87.41,0,0,0-13.41-1.07,87.53,87.53,0,0,0-61,25.41l-45.25,45.25a8,8,0,0,0,11.32,11.32l45.25-45.25A88,88,0,1,0,184,168a87.41,87.41,0,0,0-1.07,13.41,87.53,87.53,0,0,0,25.41,61l45.25,45.25a8,8,0,0,0,11.32-11.32ZM128,208A80,80,0,1,1,208,128,80.09,80.09,0,0,1,128,208Z"/></svg></div><div class="tab-label">Search</div></div>
         </div>
       </div>
     </div>
@@ -205,32 +303,60 @@
     <div class="screen-label">Browse</div>
     <div class="phone">
       <div class="phone-screen">
-        <div class="status-bar"><div class="notch"></div></div>
+        <div class="status-bar glass"><div class="notch"></div></div>
         <div class="page-header"><div class="page-title">Browse</div></div>
         <div class="content">
           <div class="stats-row">
-            <div class="stat-card"><div class="stat-value">7</div><div class="stat-label">Total Books</div></div>
-            <div class="stat-card"><div class="stat-value">93</div><div class="stat-label">Total Pages</div></div>
+            <div class="stat-card glass"><div class="stat-value">7</div><div class="stat-label">Books</div></div>
+            <div class="stat-card glass"><div class="stat-value">93</div><div class="stat-label">Pages</div></div>
           </div>
-          <div class="section-title">Genres</div>
-          <div class="genre-grid">
-            <div class="genre-card" style="background:rgba(201,100,66,0.08);border-color:rgba(201,100,66,0.15)"><div class="genre-emoji">🧠</div><div class="genre-name">Psychology</div><div class="genre-count">3 books</div></div>
-            <div class="genre-card" style="background:rgba(139,69,19,0.08);border-color:rgba(139,69,19,0.15)"><div class="genre-emoji">🏛️</div><div class="genre-name">Philosophy</div><div class="genre-count">2 books</div></div>
-            <div class="genre-card" style="background:rgba(184,150,46,0.08);border-color:rgba(184,150,46,0.15)"><div class="genre-emoji">🔮</div><div class="genre-name">Esoteric</div><div class="genre-count">3 books</div></div>
-            <div class="genre-card" style="background:rgba(0,194,204,0.08);border-color:rgba(0,194,204,0.15)"><div class="genre-emoji">🧬</div><div class="genre-name">Neuroscience</div><div class="genre-count">1 book</div></div>
-            <div class="genre-card" style="background:rgba(107,91,149,0.08);border-color:rgba(107,91,149,0.15)"><div class="genre-emoji">📜</div><div class="genre-name">Biography</div><div class="genre-count">1 book</div></div>
-            <div class="genre-card" style="background:rgba(136,176,75,0.08);border-color:rgba(136,176,75,0.15)"><div class="genre-emoji">🌱</div><div class="genre-name">Self Help</div><div class="genre-count">0 books</div></div>
+          <div class="section-title">CATEGORIES</div>
+          <div class="genre-row glass">
+            <div class="genre-icon-wrap"><svg viewBox="0 0 256 256" fill="#007AFF" width="20" height="20"><path d="M224,72H180.28l17.6-17.6a8,8,0,0,0-11.32-11.32l-32,32a8,8,0,0,0,0,11.32l32,32a8,8,0,0,0,11.32-11.32L180.28,88H224a8,8,0,0,0,0-16ZM48,168H75.72l-17.6,17.6a8,8,0,0,0,11.32,11.32l32-32a8,8,0,0,0,0-11.32l-32-32A8,8,0,0,0,58.12,116.4L75.72,136H48a8,8,0,0,0,0,16Zm128-80H128a8,8,0,0,0-8,8v48a8,8,0,0,0,16,0V104h40a8,8,0,0,0,0-16ZM128,176h40a8,8,0,0,0,0-16H128a8,8,0,0,0,0,16Z"/></svg></div>
+            <div class="genre-name">All Books</div>
+            <div class="genre-right"><div class="genre-count">7</div><svg class="chevron" viewBox="0 0 256 256" fill="currentColor"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/></svg></div>
           </div>
-          <div style="background:rgba(255,107,53,0.08);border:1px solid rgba(0,0,0,0.06);border-radius:12px;padding:16px">
-            <div style="font-size:14px;font-weight:600;color:#FF6B35;margin-bottom:6px">💡 Tip</div>
-            <div style="font-size:13px;color:#8e8e93;line-height:1.5">Import EPUB files from your favorite ebook sources. The app extracts cover images and chapters automatically.</div>
+          <div class="genre-row glass">
+            <div class="genre-icon-wrap"><svg viewBox="0 0 256 256" fill="#C96442" width="20" height="20"><path d="M224,128a8,8,0,0,1-8,8H199.35l-13.82,55.29a8,8,0,0,1-7.79,6.21h-.28a8,8,0,0,1-7.72-6l-17.44-55.5H128v48a8,8,0,0,1-16,0V133.44L85.18,80H56a8,8,0,0,1,0-16H88a8,8,0,0,1,7.79,6.21L109.58,79l17.44,55.5H160a8,8,0,0,1,0,16H136.65l13.82,55.29a8,8,0,0,0,7.79,6.21h.28a8,8,0,0,0,7.72-6l17.44-55.5H216A8,8,0,0,0,224,128Z"/></svg></div>
+            <div class="genre-name">Psychology</div>
+            <div class="genre-right"><div class="genre-count">3</div><svg class="chevron" viewBox="0 0 256 256" fill="currentColor"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/></svg></div>
+          </div>
+          <div class="genre-row glass">
+            <div class="genre-icon-wrap"><svg viewBox="0 0 256 256" fill="#8B4513" width="20" height="20"><path d="M213.66,69.66l-128,128a8,8,0,0,1-11.32,0l-64-64a8,8,0,0,1,11.32-11.32L80,180.69,202.34,58.34a8,8,0,0,1,11.32,11.32Z"/></svg></div>
+            <div class="genre-name">Philosophy</div>
+            <div class="genre-right"><div class="genre-count">2</div><svg class="chevron" viewBox="0 0 256 256" fill="currentColor"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/></svg></div>
+          </div>
+          <div class="genre-row glass">
+            <div class="genre-icon-wrap"><svg viewBox="0 0 256 256" fill="#B8962E" width="20" height="20"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm0-160a8,8,0,0,0-8,8v47.31L96.31,128a8,8,0,0,0,11.38,11.32L128,119.06V80A8,8,0,0,0,128,56Z"/></svg></div>
+            <div class="genre-name">Esoteric</div>
+            <div class="genre-right"><div class="genre-count">3</div><svg class="chevron" viewBox="0 0 256 256" fill="currentColor"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/></svg></div>
+          </div>
+          <div class="genre-row glass">
+            <div class="genre-icon-wrap"><svg viewBox="0 0 256 256" fill="#00C2CC" width="20" height="20"><path d="M208,32H172.28a48.28,48.28,0,0,0-35.71,16.17l-9.71,10.6A16.47,16.47,0,0,1,115.38,64H83.72a48,48,0,0,0-34.75,14.69l-5.5,5.83A8,8,0,0,0,48,96H24a8,8,0,0,0,0,16H44.59l13.7,91.34A16,16,0,0,0,74,218.69H182a16,16,0,0,0,15.71-15.34L216,64A8,8,0,0,0,208,56V32ZM160,48a32,32,0,1,1-32,32A32,32,0,0,1,160,48Z"/></svg></div>
+            <div class="genre-name">Neuroscience</div>
+            <div class="genre-right"><div class="genre-count">1</div><svg class="chevron" viewBox="0 0 256 256" fill="currentColor"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/></svg></div>
+          </div>
+          <div class="genre-row glass">
+            <div class="genre-icon-wrap"><svg viewBox="0 0 256 256" fill="#6B5B95" width="20" height="20"><path d="M230.66,200.66l-45.25-45.25A88.19,88.19,0,1,0,168,184a87.41,87.41,0,0,0-13.41-1.07,87.53,87.53,0,0,0-61,25.41l-45.25,45.25a8,8,0,0,0,11.32,11.32l45.25-45.25A88,88,0,1,0,184,168a87.41,87.41,0,0,0-1.07,13.41,87.53,87.53,0,0,0,25.41,61l45.25,45.25a8,8,0,0,0,11.32-11.32ZM128,208A80,80,0,1,1,208,128,80.09,80.09,0,0,1,128,208Z"/></svg></div>
+            <div class="genre-name">Biography</div>
+            <div class="genre-right"><div class="genre-count">1</div><svg class="chevron" viewBox="0 0 256 256" fill="currentColor"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/></svg></div>
+          </div>
+          <div class="genre-row glass">
+            <div class="genre-icon-wrap"><svg viewBox="0 0 256 256" fill="#88B04B" width="20" height="20"><path d="M224,128a8,8,0,0,1-8,8H199.35l-13.82,55.29a8,8,0,0,1-7.79,6.21h-.28a8,8,0,0,1-7.72-6l-17.44-55.5H128v48a8,8,0,0,1-16,0V133.44L85.18,80H56a8,8,0,0,1,0-16H88a8,8,0,0,1,7.79,6.21L109.58,79l17.44,55.5H160a8,8,0,0,1,0,16H136.65l13.82,55.29a8,8,0,0,0,7.79,6.21h.28a8,8,0,0,0,7.72-6l17.44-55.5H216A8,8,0,0,0,224,128Z"/></svg></div>
+            <div class="genre-name">Self Help</div>
+            <div class="genre-right"><div class="genre-count">0</div><svg class="chevron" viewBox="0 0 256 256" fill="currentColor"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/></svg></div>
+          </div>
+
+          <div class="tip-card glass">
+            <div class="tip-header"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M176,216H80a8,8,0,0,1-8-8V136H40a8,8,0,0,1-5.66-13.66l88-88a8,8,0,0,1,11.32,0l88,88A8,8,0,0,1,216,136H184v72A8,8,0,0,1,176,216Z"/></svg><div class="tip-title"> Tip</div></div>
+            <div class="tip-text">Import EPUB files from your favorite ebook sources. The app extracts cover images and chapters automatically.</div>
           </div>
         </div>
-        <div class="tab-bar">
-          <div class="tab-item"><div class="tab-icon">📖</div><div class="tab-label">Reading Now</div></div>
-          <div class="tab-item"><div class="tab-icon">📚</div><div class="tab-label">Library</div></div>
-          <div class="tab-item"><div class="tab-icon active">🔍</div><div class="tab-label active">Browse</div></div>
-          <div class="tab-item"><div class="tab-icon">🔎</div><div class="tab-label">Search</div></div>
+        <div class="tab-bar glass">
+          <div class="tab-item"><div class="tab-icon"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M213.66,82.34l-56-56A8,8,0,0,0,152,24H56A16,16,0,0,0,40,40V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM160,51.31,188.69,80H160ZM200,216H56V40h88V88a8,8,0,0,0,8,8h48V216Zm-42.34-77.66a8,8,0,0,1-11.32,11.32L136,139.31V184a8,8,0,0,1-16,0V139.31l-10.34,10.35a8,8,0,0,1-11.32-11.32l24-24a8,8,0,0,1,11.32,0Z"/></svg></div><div class="tab-label">Reading Now</div></div>
+          <div class="tab-item"><div class="tab-icon"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M224,72H180.28l17.6-17.6a8,8,0,0,0-11.32-11.32l-32,32a8,8,0,0,0,0,11.32l32,32a8,8,0,0,0,11.32-11.32L180.28,88H224a8,8,0,0,0,0-16ZM48,168H75.72l-17.6,17.6a8,8,0,0,0,11.32,11.32l32-32a8,8,0,0,0,0-11.32l-32-32A8,8,0,0,0,58.12,116.4L75.72,136H48a8,8,0,0,0,0,16Zm128-80H128a8,8,0,0,0-8,8v48a8,8,0,0,0,16,0V104h40a8,8,0,0,0,0-16ZM128,176h40a8,8,0,0,0,0-16H128a8,8,0,0,0,0,16Z"/></svg></div><div class="tab-label">Library</div></div>
+          <div class="tab-item"><div class="tab-icon"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm0-160a8,8,0,0,0-8,8v47.31L96.31,128a8,8,0,0,0,11.38,11.32L128,119.06V80A8,8,0,0,0,128,56Z"/></svg></div><div class="tab-label active">Browse</div></div>
+          <div class="tab-item"><div class="tab-icon"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M230.66,200.66l-45.25-45.25A88.19,88.19,0,1,0,168,184a87.41,87.41,0,0,0-13.41-1.07,87.53,87.53,0,0,0-61,25.41l-45.25,45.25a8,8,0,0,0,11.32,11.32l45.25-45.25A88,88,0,1,0,184,168a87.41,87.41,0,0,0-1.07,13.41,87.53,87.53,0,0,0,25.41,61l45.25,45.25a8,8,0,0,0,11.32-11.32ZM128,208A80,80,0,1,1,208,128,80.09,80.09,0,0,1,128,208Z"/></svg></div><div class="tab-label">Search</div></div>
         </div>
       </div>
     </div>
@@ -241,35 +367,43 @@
     <div class="screen-label">Search</div>
     <div class="phone">
       <div class="phone-screen">
-        <div class="status-bar"><div class="notch"></div></div>
+        <div class="status-bar glass"><div class="notch"></div></div>
         <div class="page-header"><div class="page-title">Search</div></div>
         <div class="content">
-          <input class="search-input" placeholder="Search your library..." value="hermetic">
-          <div class="reading-card" style="margin-bottom:12px;border-bottom:0.5px solid rgba(0,0,0,0.06);padding-bottom:12px">
-            <div class="book-cover" style="width:50px;height:70px;background:#B8962E;border-radius:4px;display:flex;align-items:center;justify-content:center"><div class="initials" style="font-size:16px">HP</div></div>
-            <div><div style="font-size:16px;color:#1C1C1E">The Hermetic Path</div><div style="font-size:12px;color:#8e8e93;margin-top:2px">10 chapters · 20 pages</div></div>
+          <div class="search-bar glass">
+            <svg viewBox="0 0 256 256" fill="currentColor"><path d="M230.66,200.66l-45.25-45.25A88.19,88.19,0,1,0,168,184a87.41,87.41,0,0,0-13.41-1.07,87.53,87.53,0,0,0-61,25.41l-45.25,45.25a8,8,0,0,0,11.32,11.32l45.25-45.25A88,88,0,1,0,184,168a87.41,87.41,0,0,0-1.07,13.41,87.53,87.53,0,0,0,25.41,61l45.25,45.25a8,8,0,0,0,11.32-11.32ZM128,208A80,80,0,1,1,208,128,80.09,80.09,0,0,1,128,208Z"/></svg>
+            <input class="search-input" placeholder="Search your library..." value="hermetic">
           </div>
-          <div class="reading-card" style="border-bottom:0.5px solid rgba(0,0,0,0.06);padding-bottom:12px">
-            <div class="book-cover" style="width:50px;height:70px;background:#DD4124;border-radius:4px;display:flex;align-items:center;justify-content:center"><div class="initials" style="font-size:16px">TK</div></div>
-            <div><div style="font-size:16px;color:#1C1C1E">The Kybalion Decoded</div><div style="font-size:12px;color:#8e8e93;margin-top:2px">7 chapters · 14 pages</div></div>
+          <div class="result-row">
+            <div class="book-cover" style="width:48px;height:72px;background:#B8962E;border-radius:3px;flex-shrink:0;display:flex;align-items:center;justify-content:center"><div class="initials" style="font-size:14px">HP</div></div>
+            <div class="result-info">
+              <div class="result-title">The Hermetic Path</div>
+              <div class="result-meta">10 chapters · 20 pages</div>
+            </div>
+          </div>
+          <div class="result-row">
+            <div class="book-cover" style="width:48px;height:72px;background:#DD4124;border-radius:3px;flex-shrink:0;display:flex;align-items:center;justify-content:center"><div class="initials" style="font-size:14px">TK</div></div>
+            <div class="result-info">
+              <div class="result-title">The Kybalion Decoded</div>
+              <div class="result-meta">7 chapters · 14 pages</div>
+            </div>
           </div>
         </div>
-        <div class="tab-bar">
-          <div class="tab-item"><div class="tab-icon">📖</div><div class="tab-label">Reading Now</div></div>
-          <div class="tab-item"><div class="tab-icon">📚</div><div class="tab-label">Library</div></div>
-          <div class="tab-item"><div class="tab-icon">🔍</div><div class="tab-label">Browse</div></div>
-          <div class="tab-item"><div class="tab-icon active">🔎</div><div class="tab-label active">Search</div></div>
+        <div class="tab-bar glass">
+          <div class="tab-item"><div class="tab-icon"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M213.66,82.34l-56-56A8,8,0,0,0,152,24H56A16,16,0,0,0,40,40V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM160,51.31,188.69,80H160ZM200,216H56V40h88V88a8,8,0,0,0,8,8h48V216Zm-42.34-77.66a8,8,0,0,1-11.32,11.32L136,139.31V184a8,8,0,0,1-16,0V139.31l-10.34,10.35a8,8,0,0,1-11.32-11.32l24-24a8,8,0,0,1,11.32,0Z"/></svg></div><div class="tab-label">Reading Now</div></div>
+          <div class="tab-item"><div class="tab-icon"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M224,72H180.28l17.6-17.6a8,8,0,0,0-11.32-11.32l-32,32a8,8,0,0,0,0,11.32l32,32a8,8,0,0,0,11.32-11.32L180.28,88H224a8,8,0,0,0,0-16ZM48,168H75.72l-17.6,17.6a8,8,0,0,0,11.32,11.32l32-32a8,8,0,0,0,0-11.32l-32-32A8,8,0,0,0,58.12,116.4L75.72,136H48a8,8,0,0,0,0,16Zm128-80H128a8,8,0,0,0-8,8v48a8,8,0,0,0,16,0V104h40a8,8,0,0,0,0-16ZM128,176h40a8,8,0,0,0,0-16H128a8,8,0,0,0,0,16Z"/></svg></div><div class="tab-label">Library</div></div>
+          <div class="tab-item"><div class="tab-icon"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm0-160a8,8,0,0,0-8,8v47.31L96.31,128a8,8,0,0,0,11.38,11.32L128,119.06V80A8,8,0,0,0,128,56Z"/></svg></div><div class="tab-label">Browse</div></div>
+          <div class="tab-item"><div class="tab-icon"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M230.66,200.66l-45.25-45.25A88.19,88.19,0,1,0,168,184a87.41,87.41,0,0,0-13.41-1.07,87.53,87.53,0,0,0-61,25.41l-45.25,45.25a8,8,0,0,0,11.32,11.32l45.25-45.25A88,88,0,1,0,184,168a87.41,87.41,0,0,0-1.07,13.41,87.53,87.53,0,0,0,25.41,61l45.25,45.25a8,8,0,0,0,11.32-11.32ZM128,208A80,80,0,1,1,208,128,80.09,80.09,0,0,1,128,208Z"/></svg></div><div class="tab-label active">Search</div></div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Screen 5: Reader -->
+  <!-- Screen 5: Reader (Clean — toolbar hidden, thin progress at bottom) -->
   <div>
-    <div class="screen-label">Reader</div>
+    <div class="screen-label">Reader (Clean)</div>
     <div class="phone">
-      <div class="phone-screen reader-bg">
-        <div class="reader-progress"><div class="reader-progress-fill"></div></div>
+      <div class="phone-screen">
         <div class="reader-content">
           <div class="reader-chapter">Chapter I</div>
           <div class="reader-heading">The Nature of Mind</div>
@@ -280,41 +414,37 @@
             <p>This is the starting point of all genuine self-mastery.</p>
           </div>
         </div>
-        <div class="reader-nav">
-          <div class="reader-nav-btn disabled">← Previous</div>
-          <div class="reader-indicator">Page 1 of 12</div>
-          <div class="reader-nav-btn">Next →</div>
-        </div>
+        <!-- Thin progress bar at absolute bottom -->
+        <div class="thin-progress"><div class="thin-progress-fill" style="width:65%"></div></div>
       </div>
     </div>
   </div>
 
-  <!-- Screen 6: Reader Controls -->
+  <!-- Screen 6: Reader (Controls Visible) -->
   <div>
     <div class="screen-label">Reader (Controls Visible)</div>
     <div class="phone">
-      <div class="phone-screen reader-bg">
-        <div class="reader-progress"><div class="reader-progress-fill"></div></div>
-        <!-- Top overlay -->
-        <div style="background:#1C1C1E;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:0.5px solid rgba(255,255,255,0.08)">
-          <div style="width:36px;height:36px;border-radius:20px;border:1.5px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;font-size:16px;color:#FF6B35;font-weight:600">✕</div>
-          <div style="flex:1;text-align:center;font-size:16px;font-weight:600;color:#FF6B35">The Hermetic Path</div>
-          <div style="display:flex;gap:8px">
-            <div style="width:36px;height:36px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;font-size:16px">☰</div>
-            <div style="width:36px;height:36px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:#FF6B35">Aa</div>
+      <div class="phone-screen" style="position:relative">
+        <!-- Top overlay — glass -->
+        <div class="top-overlay glass">
+          <div class="close-btn glass"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"/></svg></div>
+          <div class="top-title">The Hermetic Path</div>
+          <div class="top-right">
+            <div class="icon-btn glass"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm0-160a8,8,0,0,0-8,8v47.31L96.31,128a8,8,0,0,0,11.38,11.32L128,119.06V80A8,8,0,0,0,128,56Z"/></svg></div>
+            <div class="theme-btn glass"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M216,128A88,88,0,1,1,128,40,88.1,88.1,0,0,1,216,128Zm-16,0A72,72,0,1,0,128,200,72.08,72.08,0,0,0,200,128ZM128,64a8,8,0,0,0-8,8v48a8,8,0,0,0,16,0V72A8,8,0,0,0,128,64Z"/></svg></div>
           </div>
         </div>
-        <!-- Tabs -->
-        <div style="display:flex;border-bottom:0.5px solid rgba(255,255,255,0.08);background:#1C1C1E">
-          <div style="padding:10px 18px;font-size:13px;font-weight:600;color:#FF6B35;border-bottom:3px solid #FF6B35">📖 Read</div>
-          <div style="padding:10px 18px;font-size:13px;font-weight:600;color:#8e8e93">🗒 Notes (3)</div>
+        <!-- Tabs — glass -->
+        <div class="reader-tabs glass" style="margin-top:50px">
+          <div class="reader-tab tab-active">Read</div>
+          <div class="reader-tab">Notes (3)</div>
         </div>
-        <!-- Chapter nav -->
-        <div style="display:flex;gap:6px;padding:10px;background:#000;border-bottom:0.5px solid rgba(255,255,255,0.08);overflow-x:auto">
-          <div style="padding:5px 14px;border-radius:20px;border:1.5px solid #FF6B35;background:#FF6B35;color:#fff;font-size:12px;font-weight:600;white-space:nowrap">Chapter I</div>
-          <div style="padding:5px 14px;border-radius:20px;border:1.5px solid rgba(255,255,255,0.08);background:rgba(255,107,53,0.12);color:#8e8e93;font-size:12px;font-weight:600;white-space:nowrap">Chapter II</div>
-          <div style="padding:5px 14px;border-radius:20px;border:1.5px solid rgba(255,255,255,0.08);background:rgba(255,107,53,0.12);color:#8e8e93;font-size:12px;font-weight:600;white-space:nowrap">Chapter III</div>
-          <div style="padding:5px 14px;border-radius:20px;border:1.5px solid rgba(255,255,255,0.08);background:rgba(255,107,53,0.12);color:#8e8e93;font-size:12px;font-weight:600;white-space:nowrap">Chapter IV</div>
+        <!-- Chapter nav — glass pills -->
+        <div class="chapter-nav glass">
+          <div class="chapter-pill active">Chapter I</div>
+          <div class="chapter-pill">Chapter II</div>
+          <div class="chapter-pill">Chapter III</div>
+          <div class="chapter-pill">Chapter IV</div>
         </div>
         <div class="reader-content" style="flex:1">
           <div class="reader-chapter">Chapter I</div>
@@ -324,20 +454,270 @@
             <p>The mind is not a vessel to be filled, but a fire to be kindled.</p>
           </div>
         </div>
-        <!-- Add Note button -->
-        <div style="position:absolute;bottom:120px;left:50%;transform:translateX(-50%)">
-          <div style="background:#FF6B35;color:#fff;padding:14px 24px;border-radius:50px;font-size:15px;font-weight:600;box-shadow:0 4px 12px rgba(0,0,0,0.15)">✎ Add Note</div>
+        <!-- Highlight swatches -->
+        <div style="position:absolute;bottom:140px;left:50%;transform:translateX(-50%);z-index:20">
+          <div class="highlight-swatches">
+            <div class="swatch" style="background:#FFD700"></div>
+            <div class="swatch" style="background:#50C864"></div>
+            <div class="swatch" style="background:#50A0FF"></div>
+            <div class="swatch" style="background:#E060CC"></div>
+            <div class="swatch" style="background:#AF52DE"></div>
+          </div>
         </div>
-        <div class="reader-nav">
-          <div class="reader-nav-btn disabled">← Previous</div>
-          <div class="reader-indicator">Page 1 of 12</div>
-          <div class="reader-nav-btn">Next →</div>
+        <div class="reader-toolbar glass">
+          <div class="toolbar-nav">
+            <svg viewBox="0 0 256 256" fill="currentColor" class="disabled"><path d="M165.66,202.34a8,8,0,0,1-11.32,11.32l-80-80a8,8,0,0,1,0-11.32l80-80a8,8,0,0,1,11.32,11.32L91.31,128Z"/></svg>
+            <div class="reader-pct">65%</div>
+            <svg viewBox="0 0 256 256" fill="currentColor"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L158.59,128,90.34,59.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/></svg>
+          </div>
+          <div class="toolbar-controls">
+            <div class="control-btn"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M230.66,200.66l-45.25-45.25A88.19,88.19,0,1,0,168,184a87.41,87.41,0,0,0-13.41-1.07,87.53,87.53,0,0,0-61,25.41l-45.25,45.25a8,8,0,0,0,11.32,11.32l45.25-45.25A88,88,0,1,0,184,168a87.41,87.41,0,0,0-1.07,13.41,87.53,87.53,0,0,0,25.41,61l45.25,45.25a8,8,0,0,0,11.32-11.32ZM128,208A80,80,0,1,1,208,128,80.09,80.09,0,0,1,128,208Z"/></svg></div>
+            <div class="control-btn"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm0-160a8,8,0,0,0-8,8v47.31L96.31,128a8,8,0,0,0,11.38,11.32L128,119.06V80A8,8,0,0,0,128,56Z"/></svg></div>
+            <div class="control-btn"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M192,112H171.31l14.35-14.34a8,8,0,0,0-11.32-11.32l-28,28a8,8,0,0,0,0,11.32l28,28a8,8,0,0,0,11.32-11.32L171.31,128H192a8,8,0,0,0,0-16Zm-72,0H84.69l14.35-14.34a8,8,0,0,0-11.32-11.32l-28,28a8,8,0,0,0,0,11.32l28,28a8,8,0,0,0,11.32-11.32L84.69,128H120a8,8,0,0,0,0-16Z"/></svg></div>
+            <div class="control-btn"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M216,128A88,88,0,1,1,128,40,88.1,88.1,0,0,1,216,128Zm-16,0A72,72,0,1,0,128,200,72.08,72.08,0,0,0,200,128ZM128,64a8,8,0,0,0-8,8v48a8,8,0,0,0,16,0V72A8,8,0,0,0,128,64Z"/></svg></div>
+          </div>
+        </div>
+        <!-- Thin progress bar at absolute bottom -->
+        <div class="thin-progress"><div class="thin-progress-fill" style="width:65%"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Screen 7: Theme Panel -->
+  <div>
+    <div class="screen-label">Theme Panel</div>
+    <div class="phone">
+      <div class="phone-screen" style="position:relative;background:#1C1C1E">
+        <div class="reader-content">
+          <div class="reader-body" style="opacity:0.3">
+            <p>Background content dimmed...</p>
+          </div>
+        </div>
+        <!-- Theme panel bottom sheet -->
+        <div style="position:absolute;bottom:0;left:0;right:0;background:#2C2C2E;border-top-left-radius:12px;border-top-right-radius:12px;padding:20px 20px 40px;border-top:0.5px solid #38383A">
+          <div style="width:36px;height:4px;border-radius:2px;background:#8E8E93;opacity:0.3;margin:0 auto 16px"></div>
+          <div style="font-size:11px;font-weight:600;letter-spacing:0.5px;color:#8E8E93;margin-bottom:12px">BRIGHTNESS</div>
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+            <svg viewBox="0 0 256 256" fill="#8E8E93" width="16" height="16"><path d="M128,80a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160ZM216,128a8,8,0,0,1-8,8H184v24a8,8,0,0,1-16,0V136H144a8,8,0,0,1,0-16h24V96a8,8,0,0,1,16,0v24h24A8,8,0,0,1,216,128ZM72.33,56.84a8,8,0,0,1-1.17-11.28l16-19.2A8,8,0,0,1,96,40a8,8,0,0,1,4.84,1.52l16,12A8,8,0,0,1,113.67,68,8,8,0,0,1,104,76.67L92.79,72.11,80.33,87.17a8,8,0,0,1-11.28,1.17Zm128.17-2.81a8,8,0,0,1-11.28-1.17L177.89,40.21l-11.24,4.56a8,8,0,0,1-11.28-4.84A8,8,0,0,1,160,32a8,8,0,0,1,4.84,1.52l16,12A8,8,0,0,1,185,52.67a8,8,0,0,1-4.48,11.36Z"/></svg>
+            <div style="flex:1;height:4px;border-radius:2px;background:rgba(128,128,128,0.2);overflow:hidden">
+              <div style="height:4px;border-radius:2px;background:#0A84FF;width:80%"></div>
+            </div>
+            <svg viewBox="0 0 256 256" fill="#8E8E93" width="20" height="20"><path d="M128,80a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160ZM216,128a8,8,0,0,1-8,8H184v24a8,8,0,0,1-16,0V136H144a8,8,0,0,1,0-16h24V96a8,8,0,0,1,16,0v24h24A8,8,0,0,1,216,128ZM72.33,56.84a8,8,0,0,1-1.17-11.28l16-19.2A8,8,0,0,1,96,40a8,8,0,0,1,4.84,1.52l16,12A8,8,0,0,1,113.67,68,8,8,0,0,1,104,76.67L92.79,72.11,80.33,87.17a8,8,0,0,1-11.28,1.17Zm128.17-2.81a8,8,0,0,1-11.28-1.17L177.89,40.21l-11.24,4.56a8,8,0,0,1-11.28-4.84A8,8,0,0,1,160,32a8,8,0,0,1,4.84,1.52l16,12A8,8,0,0,1,185,52.67a8,8,0,0,1-4.48,11.36Z"/></svg>
+          </div>
+          <div style="text-align:center;font-size:14px;color:#F2F2F7;margin-bottom:20px">80%</div>
+          <div style="font-size:11px;font-weight:600;letter-spacing:0.5px;color:#8E8E93;margin-bottom:12px">THEME</div>
+          <div style="display:flex;justify-content:space-between;gap:8px">
+            <div style="flex:1;text-align:center">
+              <div style="width:40px;height:40px;border-radius:20px;background:#FFFFFF;border:2px solid #E5E5EA;margin:0 auto 6px"></div>
+              <div style="font-size:10px;color:#F2F2F7">Light</div>
+            </div>
+            <div style="flex:1;text-align:center">
+              <div style="width:40px;height:40px;border-radius:20px;background:#F8F1E3;border:2px solid #D4C4A8;margin:0 auto 6px"></div>
+              <div style="font-size:10px;color:#F2F2F7">Sepia</div>
+            </div>
+            <div style="flex:1;text-align:center">
+              <div style="width:40px;height:40px;border-radius:20px;background:#2C2C2E;border:3px solid #0A84FF;margin:0 auto 6px"></div>
+              <div style="font-size:10px;color:#F2F2F7">Dark</div>
+            </div>
+            <div style="flex:1;text-align:center">
+              <div style="width:40px;height:40px;border-radius:20px;background:#121212;border:2px solid #1C1C1E;margin:0 auto 6px"></div>
+              <div style="font-size:10px;color:#F2F2F7">Night</div>
+            </div>
+          </div>
+        </div>
+        <div class="thin-progress"><div class="thin-progress-fill" style="width:65%"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Screen 8: TOC (Full Screen) -->
+  <div>
+    <div class="screen-label">TOC</div>
+    <div class="phone">
+      <div class="phone-screen" style="background:#1C1C1E">
+        <div style="padding:50px 20px 12px;display:flex;justify-content:space-between;align-items:center;border-bottom:0.5px solid #38383A">
+          <div style="font-size:20px;font-weight:700;color:#F2F2F7">Table of Contents</div>
+          <div style="border:1.5px solid #38383A;border-radius:8px;padding:6px 12px;font-size:14px;font-weight:700;color:#0A84FF">Done</div>
+        </div>
+        <!-- Segmented control -->
+        <div style="display:flex;margin:12px 20px 0;border-radius:8px;padding:2px;background:#38383A">
+          <div style="flex:1;text-align:center;padding:8px;border-radius:6px;background:#1C1C1E;font-size:13px;font-weight:600;color:#F2F2F7">Contents</div>
+          <div style="flex:1;text-align:center;padding:8px;border-radius:6px;font-size:13px;font-weight:600;color:#8E8E93">Bookmarks</div>
+          <div style="flex:1;text-align:center;padding:8px;border-radius:6px;font-size:13px;font-weight:600;color:#8E8E93">Notes</div>
+        </div>
+        <!-- Chapter list -->
+        <div style="padding:0 20px">
+          <div style="display:flex;align-items:center;padding:14px 0;border-bottom:0.5px solid #38383A">
+            <div style="width:3px;height:32px;border-radius:1.5px;background:#0A84FF;margin-right:12px"></div>
+            <div style="flex:1">
+              <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#8E8E93;margin-bottom:2px">Chapter I</div>
+              <div style="font-size:16px;color:#0A84FF">The Nature of Mind</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;padding:14px 0;border-bottom:0.5px solid #38383A">
+            <div style="flex:1">
+              <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#8E8E93;margin-bottom:2px">Chapter II</div>
+              <div style="font-size:16px;color:#F2F2F7">The Hermetic Tradition</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;padding:14px 0;border-bottom:0.5px solid #38383A">
+            <div style="flex:1">
+              <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#8E8E93;margin-bottom:2px">Chapter III</div>
+              <div style="font-size:16px;color:#F2F2F7">Mental Alchemy</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;padding:14px 0;border-bottom:0.5px solid #38383A">
+            <div style="flex:1">
+              <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#8E8E93;margin-bottom:2px">Chapter IV</div>
+              <div style="font-size:16px;color:#F2F2F7">The Principle of Rhythm</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;padding:14px 0">
+            <div style="flex:1">
+              <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#8E8E93;margin-bottom:2px">Chapter V</div>
+              <div style="font-size:16px;color:#F2F2F7">The Art of Transmutation</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
 </div>
+
+  <!-- Screen 9: Typography Controls -->
+  <div>
+    <div class="screen-label">Typography Controls</div>
+    <div class="phone">
+      <div class="phone-screen" style="position:relative;background:#1C1C1E">
+        <div class="reader-content" style="opacity:0.3">
+          <div class="reader-body"><p>Background content...</p></div>
+        </div>
+        <!-- Typography panel bottom sheet -->
+        <div style="position:absolute;bottom:0;left:0;right:0;background:#2C2C2E;border-top-left-radius:12px;border-top-right-radius:12px;padding:20px 20px 40px;border-top:0.5px solid #38383A;max-height:80%">
+          <div style="width:36px;height:4px;border-radius:2px;background:#8E8E93;opacity:0.3;margin:0 auto 16px"></div>
+          <!-- Font Size -->
+          <div style="font-size:11px;font-weight:600;letter-spacing:0.5px;color:#8E8E93;margin-bottom:10px">FONT SIZE</div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+            <span style="font-size:12px;color:#8E8E93">A</span>
+            <div style="flex:1;height:4px;border-radius:2px;background:rgba(128,128,128,0.2);overflow:hidden">
+              <div style="height:4px;border-radius:2px;background:#0A84FF;width:50%"></div>
+            </div>
+            <span style="font-size:18px;color:#8E8E93">A</span>
+          </div>
+          <div style="display:flex;justify-content:center;align-items:center;gap:16px;margin-bottom:16px">
+            <div style="border:1.5px solid #38383A;border-radius:8px;padding:6px 16px;font-size:14px;font-weight:700;color:#0A84FF">A-</div>
+            <div style="font-size:14px;color:#F2F2F7">17</div>
+            <div style="border:1.5px solid #38383A;border-radius:8px;padding:6px 16px;font-size:14px;font-weight:700;color:#0A84FF">A+</div>
+          </div>
+          <!-- Font List -->
+          <div style="font-size:11px;font-weight:600;letter-spacing:0.5px;color:#8E8E93;margin-bottom:10px">FONT</div>
+          <div style="max-height:120px;overflow-y:auto">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:0.5px solid #38383A">
+              <span style="font-size:16px;color:#F2F2F7">New York</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:0.5px solid #38383A;background:rgba(10,132,255,0.08)">
+              <span style="font-size:16px;color:#0A84FF">Georgia</span>
+              <span style="color:#0A84FF;font-weight:600">✓</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:0.5px solid #38383A">
+              <span style="font-size:16px;color:#F2F2F7">System</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0">
+              <span style="font-size:16px;color:#F2F2F7">Palatino</span>
+            </div>
+          </div>
+          <!-- Toggles -->
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-top:0.5px solid #38383A;margin-top:12px">
+            <span style="font-size:15px;color:#F2F2F7">Bold Text</span>
+            <div style="width:44px;height:26px;border-radius:13px;padding:2px;background:#38383A;justify-content:center">
+              <div style="width:22px;height:22px;border-radius:11px;background:#fff"></div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-top:0.5px solid #38383A">
+            <span style="font-size:15px;color:#F2F2F7">Justify Text</span>
+            <div style="width:44px;height:26px;border-radius:13px;padding:2px;background:#0A84FF">
+              <div style="width:22px;height:22px;border-radius:11px;background:#fff;transform:translateX(18px)"></div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-top:0.5px solid #38383A">
+            <span style="font-size:15px;color:#F2F2F7">Both Margins Advance</span>
+            <div style="width:44px;height:26px;border-radius:13px;padding:2px;background:#38383A">
+              <div style="width:22px;height:22px;border-radius:11px;background:#fff"></div>
+            </div>
+          </div>
+          <div style="border-radius:8px;padding:12px;background:#0A84FF;text-align:center;margin-top:12px">
+            <span style="color:#fff;font-weight:700;font-size:15px">Done</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Screen 10: Library List View -->
+  <div>
+    <div class="screen-label">Library (List View)</div>
+    <div class="phone">
+      <div class="phone-screen">
+        <div class="status-bar glass"><div class="notch"></div></div>
+        <div class="page-header" style="display:flex;justify-content:space-between;align-items:center">
+          <div class="page-title">Library</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="width:32px;height:32px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;cursor:pointer">
+              <svg viewBox="0 0 256 256" fill="#8E8E93" width="16" height="16"><path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z"/></svg>
+            </div>
+            <div style="width:32px;height:32px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;cursor:pointer">
+              <svg viewBox="0 0 256 256" fill="#8E8E93" width="16" height="16"><path d="M224,128a8,8,0,0,1-8,8H184v32a8,8,0,0,1-16,0V136H136a8,8,0,0,1,0-16h32V88a8,8,0,0,1,16,0v32h32A8,8,0,0,1,224,128ZM40,80H120a8,8,0,0,0,0-16H40a8,8,0,0,0,0,16Zm0,48H88a8,8,0,0,0,0-16H40a8,8,0,0,0,0,16Zm0,48H72a8,8,0,0,0,0-16H40a8,8,0,0,0,0,16Z"/></svg>
+            </div>
+            <div style="width:32px;height:32px;border-radius:16px;background:rgba(0,122,255,0.35);display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;cursor:pointer">+</div>
+          </div>
+        </div>
+        <div class="content">
+          <div class="section-title">ALL BOOKS</div>
+          <div style="display:flex;flex-direction:column">
+            <div style="display:flex;align-items:center;padding:10px 0;border-bottom:0.5px solid rgba(255,255,255,0.06);gap:12px">
+              <div style="width:48px;height:72px;background:#8B4513;border-radius:3px;flex-shrink:0;display:flex;align-items:center;justify-content:center"><span style="font-size:14px;color:rgba(255,255,255,0.92);font-weight:600;letter-spacing:2px">HA</span></div>
+              <div style="flex:1">
+                <div style="font-size:16px;color:#FFFFFF">The Higher Intelligences</div>
+                <div style="font-size:11px;color:#8E8E93;margin-top:2px">EPUB</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;padding:10px 0;border-bottom:0.5px solid rgba(255,255,255,0.06);gap:12px">
+              <div style="width:48px;height:72px;background:#B8962E;border-radius:3px;flex-shrink:0;display:flex;align-items:center;justify-content:center"><span style="font-size:14px;color:rgba(255,255,255,0.92);font-weight:600;letter-spacing:2px">HP</span></div>
+              <div style="flex:1">
+                <div style="font-size:16px;color:#FFFFFF">The Hermetic Path</div>
+                <div style="font-size:11px;color:#8E8E93;margin-top:2px">EPUB</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;padding:10px 0;border-bottom:0.5px solid rgba(255,255,255,0.06);gap:12px">
+              <div style="width:48px;height:72px;background:#C96442;border-radius:3px;flex-shrink:0;display:flex;align-items:center;justify-content:center"><span style="font-size:14px;color:rgba(255,255,255,0.92);font-weight:600;letter-spacing:2px">AS</span></div>
+              <div style="flex:1">
+                <div style="font-size:16px;color:#FFFFFF">The Architecture of the Soul</div>
+                <div style="font-size:11px;color:#8E8E93;margin-top:2px">PDF</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="tab-bar glass">
+          <div class="tab-item"><div class="tab-icon"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M213.66,82.34l-56-56A8,8,0,0,0,152,24H56A16,16,0,0,0,40,40V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM160,51.31,188.69,80H160ZM200,216H56V40h88V88a8,8,0,0,0,8,8h48V216Zm-42.34-77.66a8,8,0,0,1-11.32,11.32L136,139.31V184a8,8,0,0,1-16,0V139.31l-10.34,10.35a8,8,0,0,1-11.32-11.32l24-24a8,8,0,0,1,11.32,0Z"/></svg></div><div class="tab-label">Reading Now</div></div>
+          <div class="tab-item"><div class="tab-icon"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M224,72H180.28l17.6-17.6a8,8,0,0,0-11.32-11.32l-32,32a8,8,0,0,0,0,11.32l32,32a8,8,0,0,0,11.32-11.32L180.28,88H224a8,8,0,0,0,0-16ZM48,168H75.72l-17.6,17.6a8,8,0,0,0,11.32,11.32l32-32a8,8,0,0,0,0-11.32l-32-32A8,8,0,0,0,58.12,116.4L75.72,136H48a8,8,0,0,0,0,16Zm128-80H128a8,8,0,0,0-8,8v48a8,8,0,0,0,16,0V104h40a8,8,0,0,0,0-16ZM128,176h40a8,8,0,0,0,0-16H128a8,8,0,0,0,0,16Z"/></svg></div><div class="tab-label active">Library</div></div>
+          <div class="tab-item"><div class="tab-icon"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm0-160a8,8,0,0,0-8,8v47.31L96.31,128a8,8,0,0,0,11.38,11.32L128,119.06V80A8,8,0,0,0,128,56Z"/></svg></div><div class="tab-label">Browse</div></div>
+          <div class="tab-item"><div class="tab-icon"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M230.66,200.66l-45.25-45.25A88.19,88.19,0,1,0,168,184a87.41,87.41,0,0,0-13.41-1.07,87.53,87.53,0,0,0-61,25.41l-45.25,45.25a8,8,0,0,0,11.32,11.32l45.25-45.25A88,88,0,1,0,184,168a87.41,87.41,0,0,0-1.07,13.41,87.53,87.53,0,0,0,25.41,61l45.25,45.25a8,8,0,0,0,11.32-11.32ZM128,208A80,80,0,1,1,208,128,80.09,80.09,0,0,1,128,208Z"/></svg></div><div class="tab-label">Search</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+document.querySelectorAll('.theme-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.theme-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+  });
+});
+</script>
 
 </body>
 </html>

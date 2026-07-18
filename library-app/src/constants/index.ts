@@ -16,24 +16,22 @@ export const STORAGE_KEYS = {
   getCollectionsKey: () => `collections`,
 };
 
-export const THEMES = ['parchment', 'modern', 'current', 'veil', 'apple'] as const;
+export const THEMES = ['light', 'sepia', 'dark', 'night'] as const;
 
 export const THEME_AVAILABILITY: Record<ThemeName, ThemeName[]> = {
-  parchment: ['parchment', 'modern'],
-  modern: ['parchment', 'modern'],
-  current: ['parchment', 'current'],
-  veil: ['parchment', 'veil'],
-  apple: ['apple', 'parchment'],
+  light: ['light', 'sepia', 'dark', 'night'],
+  sepia: ['light', 'sepia', 'dark', 'night'],
+  dark: ['light', 'sepia', 'dark', 'night'],
+  night: ['light', 'sepia', 'dark', 'night'],
 };
 
 export const THEME_LABELS: Record<ThemeName, string> = {
-  parchment: '🕯 Parchment',
-  modern: '✦ Modern',
-  current: '◆ Current',
-  veil: '✧ Veil',
-  apple: '🍎 Clean',
+  light: 'Light',
+  sepia: 'Sepia',
+  dark: 'Dark',
+  night: 'Night',
 };
 
-export const HIGHLIGHT_COLORS = ['yellow', 'green', 'pink', 'blue'] as const;
+export const HIGHLIGHT_COLORS = ['yellow', 'green', 'blue', 'pink', 'purple'] as const;
 
 export const SUPPORTED_EXTENSIONS = ['.pdf', '.epub', '.txt', '.md'];

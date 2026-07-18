@@ -1,9 +1,15 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { TouchableOpacity, StyleSheet } from 'react-native';
+import { Sun, Book, Moon, Star } from 'phosphor-react-native';
 import { useTheme } from '../contexts/ThemeContext';
-import { THEME_LABELS } from '../constants';
 import { ThemeName } from '../types';
-import { FONTS } from '../constants/fonts';
+
+const THEME_ICONS: Record<ThemeName, React.ComponentType<any>> = {
+  light: Sun,
+  sepia: Book,
+  dark: Moon,
+  night: Star,
+};
 
 interface Props {
   availableThemes: ThemeName[];
@@ -11,15 +17,14 @@ interface Props {
 
 export function ThemeToggle({ availableThemes }: Props) {
   const { theme, cycleTheme, tokens } = useTheme();
+  const Icon = THEME_ICONS[theme] || Sun;
 
   return (
     <TouchableOpacity
       style={[styles.button, { borderColor: tokens.border, backgroundColor: tokens.accentDim }]}
       onPress={() => cycleTheme(availableThemes)}
     >
-      <Text style={[styles.label, { color: tokens.accent }]}>
-        {THEME_LABELS[theme]}
-      </Text>
+      <Icon size={18} color={tokens.accent} weight="fill" />
     </TouchableOpacity>
   );
 }
@@ -30,9 +35,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 6,
-  },
-  label: {
-    fontFamily: FONTS.sansBold,
-    fontSize: 13,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

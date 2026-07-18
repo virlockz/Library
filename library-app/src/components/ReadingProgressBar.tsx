@@ -26,10 +26,10 @@ export function ReadingProgressBar({ progress }: Props) {
 
 const styles = StyleSheet.create({
   track: {
-    height: 3,
+    height: 2,
     width: '100%',
   },
   fill: {
-    height: 3,
+    height: 2,
   },
 });

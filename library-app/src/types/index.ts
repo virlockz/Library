@@ -23,7 +23,7 @@ export interface Page {
   body: string;
 }
 
-export type ThemeName = 'parchment' | 'modern' | 'current' | 'veil' | 'apple';
+export type ThemeName = 'light' | 'sepia' | 'dark' | 'night';
 
 export interface Note {
   id: string;
@@ -38,7 +38,7 @@ export interface Note {
 }
 
 export interface Highlight {
-  color: 'yellow' | 'green' | 'pink' | 'blue';
+  color: 'yellow' | 'green' | 'blue' | 'pink' | 'purple' | 'underline';
   text: string;
   pageIndex: number;
 }
